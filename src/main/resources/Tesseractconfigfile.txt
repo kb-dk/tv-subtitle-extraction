@@ -1,0 +1,11 @@
+tessedit_char_blacklist §_áç'"#”<>;,.-/*››%\«»·—=$ç!0123456789()?:ü'[ñ““äö|
+textord_heavy_nr 1
+textord_tabfind_vertical_horizontal_mix 0
+chop_enable 0
+unrecognised_char   
+tessedit_reject_row_percent 5
+textord_tabfind_vertical_text 0
+suspect_space_level 30
+tessedit_reject_bad_qual_wds 1
+textord_noise_rejrows 1
+textord_noise_rejwords 1
