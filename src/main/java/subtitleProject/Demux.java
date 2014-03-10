@@ -3,11 +3,15 @@ package subtitleProject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,30 +20,59 @@ import org.slf4j.LoggerFactory;
 
 import dk.statsbiblioteket.util.console.ProcessRunner;
 
+/**
+ * Class to Demux transportStream. External software, ProjectX, tries to detect subtitleStream.
+ * If detected, .son file is extracted along with every subtitle as .bmp file.
+ * @author Jacob
+ *
+ */
 public class Demux {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
 	/**
-	 * USing ProjectX to demux transportStream so .son files will be generated
+	 * Using ProjectX to demux transportStream so .son files will be generated
 	 * @param properties
-	 * @param file
-	 * @return
-	 * @throws IOException
+	 * @param file to demux
+	 * @return a list of SubtitleFragments linked to the associated pid
+	 * @throws IOException if sonfiles doesn't exist
 	 */
-	public static HashMap<String, ArrayList<SubtitleFragment>> DemuxFile(ResourceLinks resources, File file) throws IOException{
-		HashMap<String, File> sonFiles = new HashMap<String, File>();
-		log.debug("Running commandline: "+"projectx -ini "+resources.getProjectXconfig() + " -log -demux "+file.getAbsolutePath());
-		ProcessRunner pr = new ProcessRunner("bash","-c","projectx -ini "+resources.getProjectXconfig() + " -log -demux "+file.getAbsolutePath());
+	public static Map<String, List<SubtitleFragment>> DemuxFile(ResourceLinks resources, File file) throws IOException{
+		Map<String, File> sonFiles = new HashMap<String, File>();
+		log.debug("Running commandline: "+resources.getProjectx()+" -ini "+resources.getProjectXconfig() + " -log -demux "+file.getAbsolutePath());
+		ProcessRunner pr = new ProcessRunner("bash","-c",resources.getProjectx()+" -ini "+resources.getProjectXconfig() + " -log -demux "+file.getAbsolutePath());
 		pr.run();
 		//String StringOutput = pr.getProcessOutputAsString();
 		//String StringError = pr.getProcessErrorAsString();
 		//log.debug(StringOutput);
 		//log.debug(StringError);
+		detectPids(resources, file, sonFiles);
+		
+		Map<String, List<SubtitleFragment>> subsToPids = SONHandler.sonHandler(sonFiles, resources);
+		Iterator<String> it = sonFiles.keySet().iterator();
+		while(it.hasNext()){
+			removeUselessFiles(sonFiles.get(it.next()));
+		}
+		return subsToPids;
+	}
+
+	/**
+	 * Iterate through log file to detect if there is valid output
+	 * @param resources
+	 * @param file there has been demuxed
+	 * @param sonFiles projectedX has generated
+	 * @throws UnsupportedEncodingException if UTF-8 is unsupported
+	 * @throws FileNotFoundException if log file hsn't been generated
+	 * @throws IOException if log file hsn't been generated
+	 */
+	private static void detectPids(ResourceLinks resources, File file,
+			Map<String, File> sonFiles)
+			throws UnsupportedEncodingException, FileNotFoundException,
+			IOException {
 		String iniName = file.getName().replaceFirst("\\.ts$", "_log.txt");
 		File projectXLog = new File(resources.getOutput() +iniName);
-		log.debug("ProjectX log: "+projectXLog.getAbsoluteFile());
-		BufferedReader reader = null;
-		reader = new BufferedReader(new InputStreamReader(new FileInputStream(projectXLog), "UTF-8"));
-		ArrayList<String> pids = new ArrayList<String>();
+		//log.debug("ProjectX log: "+projectXLog.getAbsoluteFile());
+		
+		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(projectXLog), "UTF-8"))){
+		List<String> pids = new ArrayList<String>();
 		String line;
 		while ((line = reader.readLine()) != null)
 		{
@@ -80,15 +113,9 @@ public class Demux {
 				}
 			}
 		}
-		reader.close();
-		projectXLog.delete();
-		
-		HashMap<String, ArrayList<SubtitleFragment>> subsToPids = SONHandler.sonHandler(sonFiles, resources);
-		Iterator<String> it = sonFiles.keySet().iterator();
-		while(it.hasNext()){
-			removeUselessFiles(sonFiles.get(it.next()));
 		}
-		return subsToPids;
+		//reader.close();
+		projectXLog.delete();
 	}
 
 	/**

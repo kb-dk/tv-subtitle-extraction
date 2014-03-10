@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -15,14 +17,19 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * Parses through xml file via SAXParser and makes a list with teleteext subtitlepages and timestamps for each list
+ * @author Jacob
+ *
+ */
 public class TeletextIndexes extends DefaultHandler {
 
-	private ArrayList<TimePeriod> timePeriods;
+	private List<TimePeriod> timePeriods;
 	private String xmlPath;
-	
+
 	private TimePeriod timePtmp; 
 	String tmpValue;
-	
+
 	public TeletextIndexes(String xmlPath) {
 		super();
 		timePeriods = new ArrayList<TimePeriod>();
@@ -31,10 +38,13 @@ public class TeletextIndexes extends DefaultHandler {
 		Collections.sort(timePeriods);
 	}
 
-	public ArrayList<TimePeriod> getTimePeriodes(){
+	public List<TimePeriod> getTimePeriodes(){
 		return timePeriods;
 	}
 
+	/**
+	 * Method to start parsing xml
+	 */
 	private void parseDocument() {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		try {
@@ -55,7 +65,7 @@ public class TeletextIndexes extends DefaultHandler {
 			timePtmp = new TimePeriod();
 		}
 	}
-	
+
 	@Override
 	public void endElement(String s, String s1, String element) throws SAXException {
 		if (element.equals("timePeriod")) {
@@ -68,24 +78,29 @@ public class TeletextIndexes extends DefaultHandler {
 			timePtmp.getIndexes().put(element, tmpValue);
 		}
 	}
-	
+
 	@Override
 	public void characters(char[] ac, int i, int j) throws SAXException {
 		tmpValue = new String(ac, i, j);
 	}
 }
 
+/**
+ * Class to contain teletext pages
+ * @author Jacob
+ *
+ */
 class TimePeriod implements  Comparable<TimePeriod>{
 
 	String airDay;
-	HashMap<String, String> indexes;
+	Map<String, String> indexes;
 
 	public TimePeriod() {
 		super();
 		indexes = new HashMap<String, String>();
 	}
 
-	public HashMap<String, String> getIndexes(){
+	public Map<String, String> getIndexes(){
 		return indexes;
 	}
 
@@ -96,7 +111,8 @@ class TimePeriod implements  Comparable<TimePeriod>{
 	public void setAirDay(String airDay) {
 		this.airDay = airDay;
 	}
-	
+
+	@Override
 	public String toString(){
 		String s = airDay.toString()+"\n";
 		Iterator<String> channels = indexes.keySet().iterator();
@@ -107,43 +123,10 @@ class TimePeriod implements  Comparable<TimePeriod>{
 		return s;
 	}
 
-	@Override
-	public int compareTo(TimePeriod o) {
-		String[] thisDate = this.airDay.split("-");
-		String[] comDate = o.getAirDay().split("-");
-		int i = 0;
-		if(thisDate[0].compareTo(comDate[0])==0){
-			if(thisDate[1].compareTo(comDate[1])==0){
-				if(thisDate[2].compareTo(comDate[2])==0){
-					Log.error("xml has timeperiods with equal stamps");
-				}
-				else if(thisDate[2].compareTo(comDate[2])<0){
-					i=-1;
-				}
-				else{
-					i=1;
-				}
-			}
-			else if(thisDate[1].compareTo(comDate[1])<0){
-				i=-1;
-			}
-			else{
-				i=1;
-			}
-		}
-		else if(thisDate[0].compareTo(comDate[0])<0){
-			i=-1;
-		}
-		else{
-			i=1;
-		}
-		return i;
-	}
-	
 	/**
 	 * Compare method used for transportstream namesegment
-	 * @param date
-	 * @return
+	 * @param date String[] to compare
+	 * @return comparison
 	 */
 	public int compareTo(String[] date) {
 		String[] thisDate = this.airDay.split("-");
@@ -175,5 +158,44 @@ class TimePeriod implements  Comparable<TimePeriod>{
 			i=1;
 		}
 		return i;
+	}
+
+	/**
+	 * Same as above but with TimePeriod as argument
+	 * @param arg0 timePeriod to compare with
+	 * @return comparison
+	 */
+	public int compareTo(TimePeriod arg0) {
+
+		String[] thisDate = this.airDay.split("-");
+		String[] comDate = arg0.getAirDay().split("-");
+		int i = 0;
+		if(thisDate[0].compareTo(comDate[0])==0){
+			if(thisDate[1].compareTo(comDate[1])==0){
+				if(thisDate[2].compareTo(comDate[2])==0){
+					Log.error("xml has timeperiods with equal stamps");
+				}
+				else if(thisDate[2].compareTo(comDate[2])<0){
+					i=-1;
+				}
+				else{
+					i=1;
+				}
+			}
+			else if(thisDate[1].compareTo(comDate[1])<0){
+				i=-1;
+			}
+			else{
+				i=1;
+			}
+		}
+		else if(thisDate[0].compareTo(comDate[0])<0){
+			i=-1;
+		}
+		else{
+			i=1;
+		}
+		return i;
+
 	}
 }

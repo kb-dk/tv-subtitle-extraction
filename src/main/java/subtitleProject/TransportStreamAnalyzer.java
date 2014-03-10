@@ -2,30 +2,37 @@ package subtitleProject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.statsbiblioteket.util.console.ProcessRunner;
 
+/**
+ * Class to analyze Transportstream files
+ * @author Jacob
+ *
+ */
 public class TransportStreamAnalyzer {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
 	/**
 	 * Uses ffProbe to analyze the transportStream
-	 * @param tsPath
+	 * @param tsPath to TransportStream
 	 * @param properties
-	 * @return an arraylist with StreamInfo instances
+	 * @return an list with StreamInfo instances
 	 */
-	public static ArrayList<TransportStreamInfo> analyze(String tsPath){
-		log.debug("Running commandline: "+"var/ffprobe "+tsPath);
-		ProcessRunner pr = new ProcessRunner("bash","-c","var/ffprobe "+tsPath);
+	public static List<TransportStreamInfo> analyze(String tsPath, ResourceLinks resources){
+		log.debug("Running commandline: "+resources.getFfprobe()+" "+tsPath);
+		ProcessRunner pr = new ProcessRunner("bash","-c",resources.getFfprobe()+" "+tsPath);
 		pr.run();
-		//String StringOutput = pr.getProcessOutputAsString();
+	//	String StringOutput = pr.getProcessOutputAsString();
 		String StringError = pr.getProcessErrorAsString();
 		//log.debug(StringOutput);
 		//log.debug(StringError);
 		
 		String[] outPut =StringError.split("\n");
+		
 		//Checks if working on mux-file.. based on filename
 		File ts = new File(tsPath);
 		boolean isMux =false;
@@ -34,7 +41,7 @@ public class TransportStreamAnalyzer {
 		}
 		
 		//iterate through ffprobe output, extracts programNo, service_name, videoStreamInfo and subStreams
-		ArrayList<TransportStreamInfo> tsData = new ArrayList<TransportStreamInfo>();
+		List<TransportStreamInfo> tsData = new ArrayList<TransportStreamInfo>();
 		String service_name = "";
 		String videoStreamInfo = "";
 		String programNo = "";
@@ -84,7 +91,7 @@ public class TransportStreamAnalyzer {
 				}
 				
 				firstStreamFound = false;
-				ArrayList<String> subStreams = new ArrayList<String>();
+				List<String> subStreams = new ArrayList<String>();
 				while(!firstStreamFound && i<outPut.length){
 					if(outPut[i].toLowerCase().contains("dvb_subtitle")){
 						subStreams.add(outPut[i]);	

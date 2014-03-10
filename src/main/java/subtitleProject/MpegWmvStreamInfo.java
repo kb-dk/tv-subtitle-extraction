@@ -1,12 +1,16 @@
 package subtitleProject;
 
+/**
+ * Extended StreamInfo class to handle additional mpeg or wmv info 
+ * @author Jacob
+ *
+ */
 public class MpegWmvStreamInfo extends StreamInfo{
 
 	private String duration;
 	
 	public MpegWmvStreamInfo(String videoStreamDetails, String duration) {
 		super(videoStreamDetails);
-		// TODO Auto-generated constructor stub
 		this.duration = duration;
 	}
 

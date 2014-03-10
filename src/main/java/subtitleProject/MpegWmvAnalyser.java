@@ -5,18 +5,23 @@ import org.slf4j.LoggerFactory;
 
 import dk.statsbiblioteket.util.console.ProcessRunner;
 
+/**
+ * Class to analyze mpeg or wmv files
+ * @author Jacob
+ *
+ */
 public class MpegWmvAnalyser {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
 	
 	/**
 	 * Uses ffProbe to analyze the mpegfile
-	 * @param Path
+	 * @param Path of file to analyze
 	 * @param properties
-	 * @return an arraylist with StreamInfo instances
+	 * @return a list with StreamInfo instances
 	 */
 	public static MpegWmvStreamInfo analyze(String Path, ResourceLinks resources){
-		log.debug("Running commandline: "+"var/ffprobe "+Path);
-		ProcessRunner pr = new ProcessRunner("bash","-c","ffprobe "+Path);
+		log.debug("Running commandline: "+resources.getFfprobe()+" "+Path);
+		ProcessRunner pr = new ProcessRunner("bash","-c",resources.getFfprobe()+" "+Path);
 		
 		pr.run();
 		String StringOutput = pr.getProcessOutputAsString();

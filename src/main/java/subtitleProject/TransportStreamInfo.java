@@ -1,13 +1,18 @@
 package subtitleProject;
 
-import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Extended StreamInfo class to handle additional TransportStream info 
+ * @author Jacob
+ *
+ */
 public class TransportStreamInfo extends StreamInfo{
 	private String programNo;
 	private String serviceName;
-	private ArrayList<String> subtitleStreams;
+	private List<String> subtitleStreams;
 	
-	public TransportStreamInfo(String programNo, String service_name, String videoStreamInfo, ArrayList<String>subStreams) {
+	public TransportStreamInfo(String programNo, String service_name, String videoStreamInfo, List<String>subStreams) {
 		super(videoStreamInfo);
 		this.programNo = programNo;
 		this.serviceName = service_name;
@@ -29,7 +34,7 @@ public class TransportStreamInfo extends StreamInfo{
 	public void addSubtitleStream(String subtitleStream) {
 		subtitleStreams.add(subtitleStream);
 	}
-	public ArrayList<String> getSubtitleStreams() {
+	public List<String> getSubtitleStreams() {
 		return subtitleStreams;
 	}
 	

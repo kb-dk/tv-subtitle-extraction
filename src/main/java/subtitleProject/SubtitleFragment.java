@@ -1,5 +1,10 @@
 package subtitleProject;
 
+/**
+ * Class to contain ocr result of single frame and a timestamp
+ * @author Jacob
+ *
+ */
 public class SubtitleFragment implements Comparable<SubtitleFragment>{
 	int no;
 	String timestamp;
@@ -28,14 +33,12 @@ public class SubtitleFragment implements Comparable<SubtitleFragment>{
 	public void setContent(String content) {
 		this.content = content;
 	}
-	@Override
-	public int compareTo(SubtitleFragment arg0) {
-		return this.no-arg0.no;
-	}
+	
 	public String toString(){
 		String outPut = timestamp + "\n" +content;
 		return outPut;
 	}
+	
 	public boolean haveContent(){
 		boolean content = false;
 		String[] temp = this.content.split("\n");
@@ -46,5 +49,9 @@ public class SubtitleFragment implements Comparable<SubtitleFragment>{
 			}
 		}
 		return content;
+	}
+	
+	public int compareTo(SubtitleFragment o) {
+		return this.no-o.no;
 	}
 }

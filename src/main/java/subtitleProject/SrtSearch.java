@@ -7,11 +7,12 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
  * Testclass to search in srt-files
- * @author jje
+ * @author Jacob
  *
  */
 public class SrtSearch {
@@ -19,7 +20,7 @@ public class SrtSearch {
 		Properties properties = new Properties();
 
 		properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("CCExtractor.properties"));
-		ArrayList<String> results = search(properties);
+		List<String> results = search(properties);
 		System.out.println("Hits: "+results.size()+"\n");
 		for(String result: results){
 		System.out.println(result);
@@ -32,8 +33,8 @@ public class SrtSearch {
 	 * @return a list with file names and timestamps which have the given searchWord
 	 * @throws IOException
 	 */
-	private static ArrayList<String> search(Properties properties) throws IOException{
-		ArrayList<String> results = new ArrayList<String>();
+	private static List<String> search(Properties properties) throws IOException{
+		List<String> results = new ArrayList<String>();
 		String searchWord = properties.getProperty("searchWord");
 		File[] files = new File(properties.getProperty("srtLocation")).listFiles(new FilenameFilter() {
 
@@ -54,7 +55,7 @@ public class SrtSearch {
 				reader = new BufferedReader(new InputStreamReader(new FileInputStream(files[i]), "UTF-8"));
 
 				searchWord = searchWord.toLowerCase();
-				ArrayList<String> srtContent = new ArrayList<String>();
+				List<String> srtContent = new ArrayList<String>();
 				String line;
 				while ((line = reader.readLine()) != null)
 				{
