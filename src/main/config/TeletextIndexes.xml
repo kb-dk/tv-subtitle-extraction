@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<teletextIndexes>
+	<timePeriod>
+		<airDay>2000-01-01</airDay>
+		<canal9>399</canal9>
+		<dk4>399</dk4>
+		<dr1>399</dr1>
+		<dr2>399</dr2>
+		<dr3>399</dr3>
+		<drk>399</drk>
+		<rama>399</rama>
+		<ultra>399</ultra>
+
+		<kanal4>399</kanal4>
+		<kanal5>399</kanal5>
+		<kanal6>399</kanal6>
+
+		<ksport>399</ksport>
+
+		<tv2>399</tv2>
+		<tv2z>399</tv2z>
+		<tv2c>399</tv2c>
+		<tv2news>399</tv2news>
+		<tv2oj>399</tv2oj>
+		<tv2fri>399</tv2fri>
+		<tv2l>399</tv2l>
+		<tv2s>399</tv2s>
+
+		<tv3>399</tv3>
+		<tv3plus>399</tv3plus>
+		<tv3puls>399</tv3puls>
+		<tv3sat>399</tv3sat>
+		<tv3sport1>399</tv3sport1>
+		<tv7eren>399</tv7eren>
+
+		<ostj>399</ostj>
+		<tinget>399</tinget>
+		<vh1>399</vh1>
+	</timePeriod>
+	<timePeriod>
+		<airDay>2012-01-10</airDay>
+		<canal9>399</canal9>
+		<dk4>399</dk4>
+		<dr1>398</dr1>
+		<dr2>397</dr2>
+		<dr3>396</dr3>
+		<drk>398</drk>
+		<rama>397</rama>
+		<ultra>395</ultra>
+
+		<kanal4>399</kanal4>
+		<kanal5>399</kanal5>
+		<kanal6>399</kanal6>
+
+		<ksport>399</ksport>
+
+		<tv2>399</tv2>
+		<tv2z>399</tv2z>
+		<tv2c>399</tv2c>
+		<tv2news>399</tv2news>
+		<tv2oj>399</tv2oj>
+		<tv2fri>399</tv2fri>
+		<tv2l>399</tv2l>
+		<tv2s>399</tv2s>
+
+		<tv3>399</tv3>
+		<tv3plus>399</tv3plus>
+		<tv3puls>399</tv3puls>
+		<tv3sat>399</tv3sat>
+		<tv3sport1>399</tv3sport1>
+		<tv7eren>399</tv7eren>
+
+		<ostj>399</ostj>
+		<tinget>399</tinget>
+		<vh1>399</vh1>
+		</timePeriod>
+</teletextIndexes>
