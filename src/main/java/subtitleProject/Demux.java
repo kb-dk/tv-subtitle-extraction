@@ -23,8 +23,6 @@ import dk.statsbiblioteket.util.console.ProcessRunner;
 /**
  * Class to Demux transportStream. External software, ProjectX, tries to detect subtitleStream.
  * If detected, .son file is extracted along with every subtitle as .bmp file.
- * @author Jacob
- *
  */
 public class Demux {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
@@ -45,7 +43,7 @@ public class Demux {
 		//log.debug(StringOutput);
 		//log.debug(StringError);
 		detectPids(resources, file, sonFiles);
-		
+
 		Map<String, List<SubtitleFragment>> subsToPids = SONHandler.sonHandler(sonFiles, resources);
 		Iterator<String> it = sonFiles.keySet().iterator();
 		while(it.hasNext()){
@@ -65,56 +63,49 @@ public class Demux {
 	 */
 	private static void detectPids(ResourceLinks resources, File file,
 			Map<String, File> sonFiles)
-			throws UnsupportedEncodingException, FileNotFoundException,
-			IOException {
+					throws UnsupportedEncodingException, FileNotFoundException,
+					IOException {
 		String iniName = file.getName().replaceFirst("\\.ts$", "_log.txt");
 		File projectXLog = new File(resources.getOutput() +iniName);
 		//log.debug("ProjectX log: "+projectXLog.getAbsoluteFile());
-		
+
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(projectXLog), "UTF-8"))){
-		List<String> pids = new ArrayList<String>();
-		String line;
-		while ((line = reader.readLine()) != null)
-		{
-			if(line.contains("Subpict.:")){
-				line = reader.readLine();
-				while(line.startsWith("PID")){
-					String[] splitsplit = line.split(" ");
-					String temp = splitsplit[1];
-					splitsplit =temp.split("x");
-					temp = splitsplit[1];
-					Pattern p = Pattern.compile("^(.*?)\\(");
-					Matcher m = p.matcher(line);
-					while (m.find()) {
-						temp = m.group(1);
-					}
-					while(!temp.startsWith("0")){
-						temp = temp.substring(1);
-					}
-					pids.add(temp);
+			List<String> pids = new ArrayList<String>();
+			String line;
+			while ((line = reader.readLine()) != null)
+			{
+				if(line.contains("Subpict.:")){
 					line = reader.readLine();
-				}
-//				String pidTemp[] = line.split(" ");
-//				String pid = pidTemp[3];
-//				String[] pidSplit = pid.split("x");
-//				int pidint = Integer.parseInt(pidSplit[pidSplit.length-2]);
-//				pid = pidSplit[0]+"x"+pidint;
-				//boolean found = false;
-				int i = 0;
-				while(i<pids.size()){
-					line = reader.readLine();
-					if(line.endsWith(".son")){
-						String[] temp = line.split(" ");					
-						sonFiles.put(pids.get(i) ,new File(temp[temp.length-1]));
-						i++;
-						log.debug("found .son: "+temp[temp.length-1]);
-						//found = true;
+					while(line.startsWith("PID")){
+						String[] splitsplit = line.split(" ");
+						String temp = splitsplit[1];
+						splitsplit =temp.split("x");
+						temp = splitsplit[1];
+						Pattern p = Pattern.compile("^(.*?)\\(");
+						Matcher m = p.matcher(line);
+						while (m.find()) {
+							temp = m.group(1);
+						}
+						while(!temp.startsWith("0")){
+							temp = temp.substring(1);
+						}
+						pids.add(temp);
+						line = reader.readLine();
+					}
+					int i = 0;
+					while(i<pids.size()){
+						line = reader.readLine();
+						if(line.endsWith(".son")){
+							String[] temp = line.split(" ");					
+							sonFiles.put(pids.get(i) ,new File(temp[temp.length-1]));
+							i++;
+							log.debug("found .son: "+temp[temp.length-1]);
+							//found = true;
+						}
 					}
 				}
 			}
 		}
-		}
-		//reader.close();
 		projectXLog.delete();
 	}
 

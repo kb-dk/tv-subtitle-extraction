@@ -11,7 +11,9 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,12 +24,10 @@ import dk.statsbiblioteket.util.console.ProcessRunner;
 
 /**
  * Class to extract subtitles by ocr of frames taken every second.
- * @author Jacob
- *
  */
 public class HardCodedSubs {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
-	private static String[] dict;
+	private static Set<String> dict;
 
 	/**
 	 * Extracts frames from Transportstream and generates srt if content
@@ -272,7 +272,6 @@ public class HardCodedSubs {
 		pr.run();
 		File ocrTxt = new File(file.getAbsolutePath()+".txt");
 
-		//BufferedReader reader = null;
 		String line ="";
 		String content ="";
 
@@ -284,7 +283,6 @@ public class HardCodedSubs {
 				content += line.trim().toLowerCase()+"\n";		
 			}
 
-			//reader.close();
 		}
 		ocrTxt.delete();
 		file.delete();
@@ -308,15 +306,7 @@ public class HardCodedSubs {
 		String tempNo = file.getAbsolutePath().substring(0,file.getAbsolutePath().length()-4);
 		String[] name;
 		name = tempNo.split("srt");
-		//		if(tempNo.toLowerCase().contains("mpeg")){
-		//			name = tempNo.split("mpeg");
-		//		}
-		//		else if(tempNo.toLowerCase().contains("wmv")){
-		//			name = tempNo.split("wmv");
-		//		}
-		//		else{
-		//			name = tempNo.split("ts");
-		//		}
+
 		int no = Integer.parseInt(name[name.length-1]);
 		float min = 0;
 		int sec = 0;
@@ -403,8 +393,8 @@ public class HardCodedSubs {
 		String[] cc = line.trim().split(" ");
 		total = cc.length;
 		for(String s: cc){
-			s.trim();
-			validCount += searchWord(s);
+			s=s.trim();
+			validCount += (dict.contains(s) ? 1 : 0 );
 		}
 
 		if(total>1 && validCount>=(total/2)){
@@ -421,45 +411,15 @@ public class HardCodedSubs {
 	 */
 	private static void populateDic(ResourceLinks resources) throws IOException{
 		if(dict==null){
-
-			try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(resources.getDict()), "UTF-8"))){
-				dict = new String[310111];
+			try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(resources.getDict())),"UTF-8"))){
+				dict = new HashSet<String>();
 				String tmp = "";
-				int i = 0;
 				while ((tmp = reader.readLine()) != null)
 				{
-					if(i<dict.length){
-						dict[i] = tmp;
-						i++;
-					}
+					dict.add(tmp.trim());
 				}
 			}
-			//reader.close();
 		}
-	}
-
-	/**
-	 * search through dictionary for word, Binary style!
-	 * @param word to search for
-	 * @return 1 if found else 0
-	 */
-	private static int searchWord(String word){
-		int result = 0;
-		int low = 0;
-		int high = dict.length -1;
-		int mid;
-		while (low <= high) {
-			mid = low + (high - low) / 2;
-			if (dict[mid].compareTo(word)>0) {
-				high = mid - 1;
-			} else if (dict[mid].compareTo(word)<0) {
-				low = mid + 1;
-			} else {
-				result = 1;
-				break;
-			}
-		}
-		return result;
 	}
 
 	/**
@@ -530,7 +490,6 @@ public class HardCodedSubs {
 		// the first i characters of s and the first j characters of t;
 		// note that d has (m+1)*(n+1) values
 		int[][] d = new int[s.length+1][t.length+1];
-		//clear all elements in d // set each element to zero
 
 		// source prefixes can be transformed into empty string by
 		// dropping all characters
@@ -551,7 +510,7 @@ public class HardCodedSubs {
 			{
 				if( s[i-1] == t[j-1]){ 
 					d[i][j] = d[i-1][j-1];
-				}// no operation required
+				}
 				else{
 					int temp1 = d[i-1][j] + 1; // a deletion
 					int temp2 = d[i][j-1] + 1; // an insertion

@@ -24,8 +24,6 @@ import dk.statsbiblioteket.util.console.ProcessRunner;
 
 /**
  * Generates srt-files. Deletes srt if no content is found.  
- * @author Jacob
- *
  */
 public class SRTGenerator implements Callable<Integer>  {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
@@ -65,8 +63,8 @@ public class SRTGenerator implements Callable<Integer>  {
 			List<TransportStreamInfo> transportStreamContent = TransportStreamAnalyzer.analyze(videoFile.getAbsolutePath(), resources);
 			dvbSubstreamMap = new HashMap<String, List<SubtitleFragment>>();
 			log.debug("ProgramCount: "+transportStreamContent.size());
+
 			// bool to make sure projectX isn't called twice on same file..
-			
 			demuxed = false;
 			String srtEnd = ".srt";
 
@@ -82,39 +80,15 @@ public class SRTGenerator implements Callable<Integer>  {
 				// More than one program in stream, have to generate multiple srt-files. Srt filenames based on programNo
 				srtEnd=program;
 
-				
+
 				File srtTeleTextPath = new File(outputFolder,videoFile.getName().replaceFirst("\\.ts$", srtEnd+"_teleText.srt"));
 				File srtdvbSubPath = new File(outputFolder,videoFile.getName().replaceFirst("\\.ts$", srtEnd+"_dvbSub.srt"));
 				File srthardcodedSubsPath = new File(outputFolder,videoFile.getName().replaceFirst("\\.ts$", srtEnd+"_hardcodedSubs.srt"));
-				
+
 				int content;
 
-//				// If no outputDestination descriped in config file, inputdest will be used
-//				String dest = executableDest;
-//				dest += srtTeleTextPath.getAbsolutePath();
-//				if(outputFolder.equals(path.getParent()) || outputFolder.equals("")){
-//					dest = "";
-//				}
-//
-//				// Sets the teltextpage based on properties
-//				String telNo;
-//				try {
-//					telNo = getTeletextPage(localtsContent, path);
-//				} catch (Exception e) {
-//					throw new Exception(e.getMessage());
-//				}
-//
-//				log.debug("Running commandline: "+resources.getCcextractor()+" "+ programNo + path.getAbsolutePath()+dest+executabletelxPage+telNo);
-//				ProcessRunner pr = new ProcessRunner("bash","-c", resources.getCcextractor()+" "+ programNo + path.getAbsolutePath()+dest+executabletelxPage+telNo);
-//				pr.run();
-//				//String StringOutput = pr.getProcessOutputAsString();
-//				//String StringError = pr.getProcessErrorAsString();
-//				//log.debug(StringOutput);
-//				//log.debug(StringError);
-//				content = haveContent(srtTeleTextPath);
-				
 				content = extractSRTFromTeletext(srtTeleTextPath, localtsContent, programNo);
-				
+
 				if(!transportStreamContent.get(i).getVideoStreamDetails().contains("No Video Stream")){
 
 					content = extractSRTFromPicture(videoFile,
@@ -172,7 +146,7 @@ public class SRTGenerator implements Callable<Integer>  {
 		}
 		return numberOfSrt;
 	}
-	
+
 	/**
 	 * Uses ccExtractor to detect subtitles from teletext, based on service name and programno in transportStream
 	 * @param srtTeleTextPath to write to
@@ -182,14 +156,14 @@ public class SRTGenerator implements Callable<Integer>  {
 	 * @throws Exception if no xmlpage is found
 	 */
 	private int extractSRTFromTeletext(File srtTeleTextPath, TransportStreamInfo localtsContent, String programNo) throws Exception{
-		
+
 		// If no outputDestination descriped in config file, inputdest will be used
 		String dest = executableDest;
 		dest += srtTeleTextPath.getAbsolutePath();
 		if(outputFolder.equals(path.getParent()) || outputFolder.equals("")){
 			dest = "";
 		}
-		
+
 		// Sets the teltextpage based on properties
 		String telNo;
 		try {
@@ -208,7 +182,7 @@ public class SRTGenerator implements Callable<Integer>  {
 		int content = haveContent(srtTeleTextPath);
 		return content;
 	}
-	
+
 	/**
 	 * Try to detect subtitles in picture using ocr
 	 * @param path to videofile
@@ -260,8 +234,8 @@ public class SRTGenerator implements Callable<Integer>  {
 	 */
 	private int extractSRTFromDvbSub(File path, File srtdvbSubPath,
 			int content, TransportStreamInfo localtsContent)
-			throws IOException, FileNotFoundException,
-			UnsupportedEncodingException {
+					throws IOException, FileNotFoundException,
+					UnsupportedEncodingException {
 		if(!demuxed){
 			demuxed = true;
 			log.info("Extracting subPictures from transportstream using ProjectX");
@@ -294,7 +268,6 @@ public class SRTGenerator implements Callable<Integer>  {
 	 * @throws IOException if no srt file exists
 	 */
 	private  int haveContent(File file) throws IOException{
-		//BufferedReader reader = null;
 		int lineCount = 0;
 		int emptyLineCount = 0;
 		String deleteNote ="";
@@ -309,21 +282,19 @@ public class SRTGenerator implements Callable<Integer>  {
 				if(srtContent.length<=1){
 					emptyLineCount++;
 				}
-			
+
+			}
+		} 
+
+		if(emptyLineCount==lineCount){
+			deleteNote =" (no Content...)";
+			file.delete();
 		}
-		} //finally {
-//			if(reader!=null){
-//				reader.close();
-			//}
-			if(emptyLineCount==lineCount){
-				deleteNote =" (no Content...)";
-				file.delete();
-			}
-			else{
-				deleteNote =" (Content Detected)";
-				content=1;
-			}
-		
+		else{
+			deleteNote =" (Content Detected)";
+			content=1;
+		}
+
 		log.info(file.getAbsolutePath()+" "+deleteNote);
 		return content;
 	}
@@ -346,7 +317,7 @@ public class SRTGenerator implements Callable<Integer>  {
 			}
 		}
 		try(PrintWriter writer = new PrintWriter(srtPath.getAbsolutePath(), "UTF-8")){
-		writer.write(srtContent);
+			writer.write(srtContent);
 		}
 		log.info(srtPath.getAbsolutePath()+" - (substream subs detected... file generated)");
 		return 1;

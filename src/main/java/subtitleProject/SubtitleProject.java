@@ -17,8 +17,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Main class of SubtitleProject. gather external paths and starts the srt generator
- * @author Jacob
- *
  */
 public class SubtitleProject {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
@@ -34,9 +32,6 @@ public class SubtitleProject {
 		log.debug("resourcepaths: "+resources.toString());
 		int returnCode = 0;
 		try {
-			//			Properties properties = new Properties();
-			//			properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("SubtitleProject.properties"));
-
 			startSrtGenerator(resources);
 		} catch (Throwable t){
 			log.error("Caught Exception while working",t);
@@ -59,7 +54,7 @@ public class SubtitleProject {
 		String properties ="";
 		String input ="";
 		String output="";
-		String dict="";
+		String dict = "";
 		String teleIndex="";
 		String tessConfig="";
 		String projectXconfig="";
@@ -88,8 +83,7 @@ public class SubtitleProject {
 
 		Properties prop = new Properties();
 		if(properties==null||properties.equals("")){
-			//prop.load(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream("SubtitleProject.properties")));
-			prop.load(new InputStreamReader(new FileInputStream("var/SubtitleProject.properties")));
+			prop.load(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream("SubtitleProject.properties")));
 		}
 		else{
 			prop.load(new InputStreamReader(new FileInputStream(properties)));
@@ -107,55 +101,56 @@ public class SubtitleProject {
 		}
 
 		dict = prop.getProperty("dict");
-		if(dict==null||dict.equalsIgnoreCase("")){
-			dict="var/dictv2.txt";
+		if(dict==null){
+			dict = Thread.currentThread().getContextClassLoader().getResource("dictv2.txt").getPath();
 		}
 
 		teleIndex = prop.getProperty("teleTextIndexPath");
 		if(teleIndex==null||teleIndex.equalsIgnoreCase("")){
-			teleIndex="var/TeletextIndexes.xml";
+			teleIndex=Thread.currentThread().getContextClassLoader().getResource("TeletextIndexes.xml").getPath();
+			log.info(teleIndex);
 		}
 
 		tessConfig = prop.getProperty("tesseractConfigPath");
 		if(tessConfig==null||tessConfig.equalsIgnoreCase("")){
-			tessConfig="var/Tesseractconfigfile.txt";
+			tessConfig=Thread.currentThread().getContextClassLoader().getResource("Tesseractconfigfile.txt").getPath();
 		}
 
 		projectXconfig=prop.getProperty("projectXIniPath");
 		if(projectXconfig==null||projectXconfig.equalsIgnoreCase("")){
-			projectXconfig="var/X.ini";
+			tessConfig=Thread.currentThread().getContextClassLoader().getResource("X.ini").getPath();
 		}
 
 		terminationTime=prop.getProperty("HoursBeforeTermination");
 		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
 			terminationTime="1000";
 		}
-		
+
 		ccextractor=prop.getProperty("ccextractorPath");
 		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
 			log.error("ccextractorPath is not defined");
 		}
-		
+
 		ffmpeg=prop.getProperty("ffmpegPath");
 		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
 			log.error("ffmpegPath is not defined");
 		}
-		
+
 		ffprobe=prop.getProperty("ffprobePath");
 		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
 			log.error("ffprobePath is not defined");
 		}
-		
+
 		tesseract=prop.getProperty("tesseract");
 		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
 			log.error("tesseract is not defined");
 		}
-				
+
 		convert=prop.getProperty("convertPath");
 		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
 			log.error("convertPath is not defined");
 		}
-		
+
 		projectx=prop.getProperty("projectXPath");
 		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
 			log.error("projectXPath is not defined");

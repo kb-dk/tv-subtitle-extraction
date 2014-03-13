@@ -2,8 +2,6 @@ package subtitleProject;
 
 /**
  * abstract class to contain info about streams. Used by TransportStreamInfo and MpegWmvStreamInfo
- * @author Jacob
- *
  */
 public abstract class StreamInfo {
 	private String videoStreamDetails;

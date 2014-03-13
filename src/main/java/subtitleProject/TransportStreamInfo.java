@@ -4,21 +4,19 @@ import java.util.List;
 
 /**
  * Extended StreamInfo class to handle additional TransportStream info 
- * @author Jacob
- *
  */
 public class TransportStreamInfo extends StreamInfo{
 	private String programNo;
 	private String serviceName;
 	private List<String> subtitleStreams;
-	
+
 	public TransportStreamInfo(String programNo, String service_name, String videoStreamInfo, List<String>subStreams) {
 		super(videoStreamInfo);
 		this.programNo = programNo;
 		this.serviceName = service_name;
 		this.subtitleStreams = subStreams;
 	}
-	
+
 	public String getProgramNo() {
 		return programNo;
 	}
@@ -37,7 +35,7 @@ public class TransportStreamInfo extends StreamInfo{
 	public List<String> getSubtitleStreams() {
 		return subtitleStreams;
 	}
-	
+
 	@Override
 	public String toString() {
 		String dvdStreamInfo = "contains no subtitleStream";
@@ -48,7 +46,7 @@ public class TransportStreamInfo extends StreamInfo{
 			}
 		}
 		return "StreamInfo: ProgramNo = " + programNo + "\n serviceName = "
-				+ serviceName + "\n videoStreamDetails = " + super.getVideoStreamDetails()
-				+ "dvbSubStream = " + dvdStreamInfo+"\n";
+		+ serviceName + "\n videoStreamDetails = " + super.getVideoStreamDetails()
+		+ "dvbSubStream = " + dvdStreamInfo+"\n";
 	}
 }

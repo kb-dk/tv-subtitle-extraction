@@ -27,7 +27,7 @@
             <filtered>
                 true
             </filtered>
-            <directory>
+            <directory> 
                 src/main/scripts
             </directory>
             <outputDirectory>

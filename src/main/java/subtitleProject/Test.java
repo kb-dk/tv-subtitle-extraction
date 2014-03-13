@@ -4,19 +4,19 @@ public class Test {
 
 	public static void main(String[] args) {
 		isSame("den hjælpe de forbandede danskere er her igen","hzælm de forbandede danskere er her igen",true);
-	    isSame("z âal emernsxnet ligesom sidste an æ i","skål vñjernsxnet ligesom sidste åü", true);
-	    isSame("ul i s ja a§le er igen kommet s til deres fødselsdag miss sophy i e i å","ul i s ja alle er igen kommet › til deres fødselsdag miss sophy i e t i ä", true);
-	    isSame("ä mr pommeroy har e placeret her","og min kære vgå mr winterbottomâ", false);
-	    isSame("tak m§s sophy y f det hele står klar","æ i tak miss åoæ det hele står klar", true);
-	    isSame("følger vi samme fremgangsmåde e j s] som sidste åü r i ei c §","samme fremgangsmåde som hved år james ja", false);
-	    isSame("der gør at det er nemt at finde med ultraviolet lys","skorpioner lever kun i de tørreste egne pa jorden", false);
-	    isSame("z i i w de kalklare gg i over et år uden føde eller vand i","å l de kan klare sig i over et år uden føde eller van« i", true);
-	    isSame("Olsen, hva' fanden laver du?","Jeg spiller atonalt.", false);
-	    isSame("skorpionen er så følsom 	    § 	    ix", "á   t skorplonen er så følsom",true);
-	    isSame("hello world","hello         world",true);
-	    
+		isSame("z âal emernsxnet ligesom sidste an æ i","skål vñjernsxnet ligesom sidste åü", true);
+		isSame("ul i s ja a§le er igen kommet s til deres fødselsdag miss sophy i e i å","ul i s ja alle er igen kommet › til deres fødselsdag miss sophy i e t i ä", true);
+		isSame("ä mr pommeroy har e placeret her","og min kære vgå mr winterbottomâ", false);
+		isSame("tak m§s sophy y f det hele står klar","æ i tak miss åoæ det hele står klar", true);
+		isSame("følger vi samme fremgangsmåde e j s] som sidste åü r i ei c §","samme fremgangsmåde som hved år james ja", false);
+		isSame("der gør at det er nemt at finde med ultraviolet lys","skorpioner lever kun i de tørreste egne pa jorden", false);
+		isSame("z i i w de kalklare gg i over et år uden føde eller vand i","å l de kan klare sig i over et år uden føde eller van« i", true);
+		isSame("Olsen, hva' fanden laver du?","Jeg spiller atonalt.", false);
+		isSame("skorpionen er så følsom 	    § 	    ix", "á   t skorplonen er så følsom",true);
+		isSame("hello world","hello         world",true);
+
 	}
-	
+
 	public static boolean isSame(String s, String t, boolean expected){
 		boolean same = false;
 		s = s.replaceAll("\\s+", " ");
@@ -32,7 +32,7 @@ public class Test {
 		System.out.println("'"+s+"' vs. '"+t+"' ("+minLength+") calculated result = "+result+" assumed identical = "+same+" (expected: "+expected+")");
 		return same;
 	}
-	
+
 	static int levenshteinDistance(char s[], char t[])
 	{
 		// for all i and j, d[i,j] will hold the Levenshtein distance between
@@ -52,7 +52,7 @@ public class Test {
 		for(int j=1;j<=t.length;j++)
 		{
 			d[0][j] = j;
-			
+
 		}
 		for(int j = 1; j< t.length;j++)
 		{

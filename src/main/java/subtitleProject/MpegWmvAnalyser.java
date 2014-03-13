@@ -7,12 +7,10 @@ import dk.statsbiblioteket.util.console.ProcessRunner;
 
 /**
  * Class to analyze mpeg or wmv files
- * @author Jacob
- *
  */
 public class MpegWmvAnalyser {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
-	
+
 	/**
 	 * Uses ffProbe to analyze the mpegfile
 	 * @param Path of file to analyze
@@ -22,7 +20,7 @@ public class MpegWmvAnalyser {
 	public static MpegWmvStreamInfo analyze(String Path, ResourceLinks resources){
 		log.debug("Running commandline: "+resources.getFfprobe()+" "+Path);
 		ProcessRunner pr = new ProcessRunner("bash","-c",resources.getFfprobe()+" "+Path);
-		
+
 		pr.run();
 		String StringOutput = pr.getProcessOutputAsString();
 		String StringError = pr.getProcessErrorAsString();
@@ -39,7 +37,7 @@ public class MpegWmvAnalyser {
 				videoInfo = s.trim()+"\n";
 			}
 		}
-		
+
 		return new MpegWmvStreamInfo(videoInfo, duration);
 	}
 }

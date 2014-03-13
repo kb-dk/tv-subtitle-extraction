@@ -19,8 +19,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Parses through xml file via SAXParser and makes a list with teleteext subtitlepages and timestamps for each list
- * @author Jacob
- *
  */
 public class TeletextIndexes extends DefaultHandler {
 
@@ -87,8 +85,6 @@ public class TeletextIndexes extends DefaultHandler {
 
 /**
  * Class to contain teletext pages
- * @author Jacob
- *
  */
 class TimePeriod implements  Comparable<TimePeriod>{
 

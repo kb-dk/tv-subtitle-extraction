@@ -11,8 +11,6 @@ import dk.statsbiblioteket.util.console.ProcessRunner;
 
 /**
  * Class to analyze Transportstream files
- * @author Jacob
- *
  */
 public class TransportStreamAnalyzer {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
@@ -26,20 +24,20 @@ public class TransportStreamAnalyzer {
 		log.debug("Running commandline: "+resources.getFfprobe()+" "+tsPath);
 		ProcessRunner pr = new ProcessRunner("bash","-c",resources.getFfprobe()+" "+tsPath);
 		pr.run();
-	//	String StringOutput = pr.getProcessOutputAsString();
+		//	String StringOutput = pr.getProcessOutputAsString();
 		String StringError = pr.getProcessErrorAsString();
 		//log.debug(StringOutput);
 		//log.debug(StringError);
-		
+
 		String[] outPut =StringError.split("\n");
-		
+
 		//Checks if working on mux-file.. based on filename
 		File ts = new File(tsPath);
 		boolean isMux =false;
 		if(ts.getName().startsWith("mux")){
 			isMux =true;
 		}
-		
+
 		//iterate through ffprobe output, extracts programNo, service_name, videoStreamInfo and subStreams
 		List<TransportStreamInfo> tsData = new ArrayList<TransportStreamInfo>();
 		String service_name = "";
@@ -64,12 +62,12 @@ public class TransportStreamAnalyzer {
 						}
 					}
 				}
-				
+
 				boolean foundFrameSize = false;
-				
+
 				//bool to know when to break if no Video stream is found
 				boolean firstStreamFound = false;
-				
+
 				while(!foundFrameSize){	
 					if(outPut[i].toLowerCase().contains("stream")){
 						firstStreamFound=true;
@@ -89,7 +87,7 @@ public class TransportStreamAnalyzer {
 						i++;
 					}
 				}
-				
+
 				firstStreamFound = false;
 				List<String> subStreams = new ArrayList<String>();
 				while(!firstStreamFound && i<outPut.length){
@@ -105,7 +103,7 @@ public class TransportStreamAnalyzer {
 						i++;
 					}
 				}
-				
+
 				tsData.add(new TransportStreamInfo(programNo, service_name,videoStreamInfo, subStreams));
 			}
 		}

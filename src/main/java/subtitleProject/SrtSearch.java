@@ -12,8 +12,6 @@ import java.util.Properties;
 
 /**
  * Testclass to search in srt-files
- * @author Jacob
- *
  */
 public class SrtSearch {
 	public static void main(String[] args) throws IOException {
@@ -23,7 +21,7 @@ public class SrtSearch {
 		List<String> results = search(properties);
 		System.out.println("Hits: "+results.size()+"\n");
 		for(String result: results){
-		System.out.println(result);
+			System.out.println(result);
 		}
 	}
 
