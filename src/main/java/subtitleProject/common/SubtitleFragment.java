@@ -1,4 +1,4 @@
-package subtitleProject;
+package subtitleProject.common;
 
 /**
  * Class to contain ocr result of single frame and a timestamp

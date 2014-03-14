@@ -20,6 +20,14 @@ import javax.lang.model.type.UnknownTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import subtitleProject.common.ResourceLinks;
+import subtitleProject.common.SubtitleFragment;
+import subtitleProject.hardCodedSubs.HardCodedSubs;
+import subtitleProject.nonStreamed.MpegWmvStreamInfo;
+import subtitleProject.subtitleStream.Demux;
+import subtitleProject.teletext.TeletextIndexes;
+import subtitleProject.teletext.TimePeriod;
+import subtitleProject.transportStream.TransportStreamInfo;
 import dk.statsbiblioteket.util.console.ProcessRunner;
 
 /**
@@ -60,9 +68,9 @@ public class SRTGenerator implements Callable<Integer>  {
 		if(transportStream){
 			log.info("TransportStream Detected");
 			log.debug("Analyzing '{}'",videoFile.getAbsolutePath());
-			List<TransportStreamInfo> transportStreamContent = TransportStreamAnalyzer.analyze(videoFile.getAbsolutePath(), resources);
+			List<TransportStreamInfo> transportStreamContent = TransportStreamInfo.analyze(videoFile.getAbsolutePath(), resources);
 			dvbSubstreamMap = new HashMap<String, List<SubtitleFragment>>();
-			log.debug("ProgramCount: "+transportStreamContent.size());
+			log.debug("ProgramCount: {}",transportStreamContent.size());
 
 			// bool to make sure projectX isn't called twice on same file..
 			demuxed = false;
@@ -96,7 +104,7 @@ public class SRTGenerator implements Callable<Integer>  {
 							srthardcodedSubsPath, content, localtsContent);
 				}
 				else{
-					log.info(localtsContent.getProgramNo()+" have no videostream.. Moving on");
+					log.info("{} have no videostream.. Moving on",localtsContent.getProgramNo());
 					srtdvbSubPath.delete();
 					srthardcodedSubsPath.delete();
 				}
@@ -122,10 +130,10 @@ public class SRTGenerator implements Callable<Integer>  {
 			throws IOException, UnknownTypeException {
 		String[] fileName = path.getName().split("\\.");
 		String type = fileName[fileName.length-1];
-		log.info(type+" Detected");
+		log.info("{} Detected",type);
 		if(type.equalsIgnoreCase("wmv")||type.equalsIgnoreCase("mpeg")){
-			log.debug("Analyzing "+path.getAbsolutePath());
-			MpegWmvStreamInfo MpegWmvStreamContent = MpegWmvAnalyser.analyze(path.getAbsolutePath(), resources);
+			log.debug("Analyzing {}",path.getAbsolutePath());
+			MpegWmvStreamInfo MpegWmvStreamContent = MpegWmvStreamInfo.analyze(path.getAbsolutePath(), resources);
 			File srthardcodedSubsPath;
 			if(path.getName().endsWith(".mpeg")){
 				srthardcodedSubsPath = new File(outputFolder,path.getName().replaceFirst("\\.mpeg$", "_hardcodedSubs.srt"));
@@ -135,13 +143,13 @@ public class SRTGenerator implements Callable<Integer>  {
 			}
 			int tempValue = HardCodedSubs.generateNonTsFrames(path, MpegWmvStreamContent, resources, srthardcodedSubsPath);
 			if(tempValue==0){
-				log.info(srthardcodedSubsPath.getAbsolutePath()+" (didn't detect enough valid text)");
+				log.info("{} (didn't detect enough valid text)",srthardcodedSubsPath.getAbsolutePath());
 				srthardcodedSubsPath.delete();
 			}
 			numberOfSrt += tempValue;
 		}
 		else{
-			log.error(type+" is not supported");
+			log.error("{} is not supported",type);
 			throw new UnknownTypeException(null, null); 
 		}
 		return numberOfSrt;
@@ -150,7 +158,7 @@ public class SRTGenerator implements Callable<Integer>  {
 	/**
 	 * Uses ccExtractor to detect subtitles from teletext, based on service name and programno in transportStream
 	 * @param srtTeleTextPath to write to
-	 * @param localtsContent infro about current stream
+	 * @param localtsContent info about current stream
 	 * @param programNo to process
 	 * @return 1 if teletextsubtitles is detected else 0
 	 * @throws Exception if no xmlpage is found
@@ -172,8 +180,9 @@ public class SRTGenerator implements Callable<Integer>  {
 			throw new Exception(e.getMessage());
 		}
 
-		log.debug("Running commandline: "+resources.getCcextractor()+" "+ programNo + path.getAbsolutePath()+dest+executabletelxPage+telNo);
-		ProcessRunner pr = new ProcessRunner("bash","-c", resources.getCcextractor()+" "+ programNo + path.getAbsolutePath()+dest+executabletelxPage+telNo);
+		String commandline = resources.getCcextractor()+" "+ programNo + path.getAbsolutePath()+dest+executabletelxPage+telNo;
+		log.debug("Running commandline: {}",commandline);
+		ProcessRunner pr = new ProcessRunner("bash","-c", commandline);
 		pr.run();
 		//String StringOutput = pr.getProcessOutputAsString();
 		//String StringError = pr.getProcessErrorAsString();
@@ -203,7 +212,7 @@ public class SRTGenerator implements Callable<Integer>  {
 			FileNotFoundException, UnsupportedEncodingException {
 		int tempint = HardCodedSubs.generateTsFrames(path, localtsContent, resources, srthardcodedSubsPath);
 		if(tempint==0){
-			log.info(srthardcodedSubsPath.getAbsolutePath()+" (didn't detect enough valid text in content)");
+			log.info("{} (didn't detect enough valid text in content)",srthardcodedSubsPath.getAbsolutePath());
 			srthardcodedSubsPath.delete();
 		}
 		else{
@@ -215,7 +224,7 @@ public class SRTGenerator implements Callable<Integer>  {
 					content, localtsContent);
 		}
 		else{
-			log.info(srtdvbSubPath.getAbsolutePath()+" has no dvb_substream");
+			log.info("{} has no dvb_substream",srtdvbSubPath.getAbsolutePath());
 			srtdvbSubPath.delete();
 		}
 		return content;
@@ -240,7 +249,7 @@ public class SRTGenerator implements Callable<Integer>  {
 			demuxed = true;
 			log.info("Extracting subPictures from transportstream using ProjectX");
 			dvbSubstreamMap = Demux.DemuxFile(resources, path);
-			log.debug("amount of dvb_subtitle registred: "+dvbSubstreamMap.keySet().size());
+			log.debug("amount of dvb_subtitle registred: {}",dvbSubstreamMap.keySet().size());
 		}
 		Iterator<String> it = dvbSubstreamMap.keySet().iterator();
 		boolean match = false;
@@ -249,13 +258,13 @@ public class SRTGenerator implements Callable<Integer>  {
 			for(String subtitleStreams: localtsContent.getSubtitleStreams()){	
 				if(subtitleStreams.contains(pid)){
 					match=true;
-					log.info(srtdvbSubPath.getAbsolutePath()+" (content detected.. running ocr)");
+					log.info("{} (content detected.. running ocr)",srtdvbSubPath.getAbsolutePath());
 					content += generateSrtFromSubtitleFragments(srtdvbSubPath, dvbSubstreamMap.get(pid));
 				}
 			}
 		}
 		if(!match){							
-			log.info(srtdvbSubPath.getAbsolutePath()+" (no content...)");
+			log.info("{} (no content...)",srtdvbSubPath.getAbsolutePath());
 			srtdvbSubPath.delete();						
 		}
 		return content;
@@ -295,7 +304,7 @@ public class SRTGenerator implements Callable<Integer>  {
 			content=1;
 		}
 
-		log.info(file.getAbsolutePath()+" "+deleteNote);
+		log.info("{} {}",file.getAbsolutePath(),deleteNote);
 		return content;
 	}
 
@@ -319,7 +328,7 @@ public class SRTGenerator implements Callable<Integer>  {
 		try(PrintWriter writer = new PrintWriter(srtPath.getAbsolutePath(), "UTF-8")){
 			writer.write(srtContent);
 		}
-		log.info(srtPath.getAbsolutePath()+" - (substream subs detected... file generated)");
+		log.info("{} - (substream subs detected... file generated)",srtPath.getAbsolutePath());
 		return 1;
 	}
 
@@ -352,13 +361,13 @@ public class SRTGenerator implements Callable<Integer>  {
 		int i = 0;
 		TimePeriod currentTP = null;
 
-		while(!foundTimePeriod && i<teletextIndexes.getTimePeriodes().size()){
-			if(teletextIndexes.getTimePeriodes().get(i).compareTo(new String[]{yy,mm,dd})>0){
+		while(!foundTimePeriod && i<teletextIndexes.getTimePeriods().size()){
+			if(teletextIndexes.getTimePeriods().get(i).compareTo(new String[]{yy,mm,dd})>0){
 				foundTimePeriod = true;
 				if(i!=0){
 					i--;
 				}
-				currentTP = teletextIndexes.getTimePeriodes().get(i);
+				currentTP = teletextIndexes.getTimePeriods().get(i);
 			}
 			else{
 				i++;
@@ -366,7 +375,7 @@ public class SRTGenerator implements Callable<Integer>  {
 		}
 
 		if(!foundTimePeriod){
-			currentTP = teletextIndexes.getTimePeriodes().get(teletextIndexes.getTimePeriodes().size()-1);
+			currentTP = teletextIndexes.getTimePeriods().get(teletextIndexes.getTimePeriods().size()-1);
 		}
 
 		Iterator<String> channels = currentTP.getIndexes().keySet().iterator();

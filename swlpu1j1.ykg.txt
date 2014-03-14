@@ -1,0 +1,28 @@
+﻿classpath changes
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	modified:   pom.xml
+#	modified:   src/main/assembly/assembly.xml
+#	modified:   src/main/java/subtitleProject/Demux.java
+#	modified:   src/main/java/subtitleProject/HardCodedSubs.java
+#	modified:   src/main/java/subtitleProject/MpegWmvAnalyser.java
+#	modified:   src/main/java/subtitleProject/MpegWmvStreamInfo.java
+#	modified:   src/main/java/subtitleProject/NoSubsException.java
+#	modified:   src/main/java/subtitleProject/ResourceLinks.java
+#	modified:   src/main/java/subtitleProject/SONHandler.java
+#	modified:   src/main/java/subtitleProject/SRTGenerator.java
+#	modified:   src/main/java/subtitleProject/SrtSearch.java
+#	modified:   src/main/java/subtitleProject/StreamInfo.java
+#	modified:   src/main/java/subtitleProject/SubtitleFragment.java
+#	modified:   src/main/java/subtitleProject/SubtitleProject.java
+#	modified:   src/main/java/subtitleProject/TeletextIndexes.java
+#	modified:   src/main/java/subtitleProject/Test.java
+#	modified:   src/main/java/subtitleProject/TransportStreamAnalyzer.java
+#	modified:   src/main/java/subtitleProject/TransportStreamInfo.java
+#	modified:   src/main/scripts/run.sh
+#
+

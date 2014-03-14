@@ -1,4 +1,4 @@
-package subtitleProject;
+package subtitleProject.subtitleStream;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,6 +18,9 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import subtitleProject.SubtitleProject;
+import subtitleProject.common.ResourceLinks;
+import subtitleProject.common.SubtitleFragment;
 import dk.statsbiblioteket.util.console.ProcessRunner;
 
 /**
@@ -35,8 +38,9 @@ public class Demux {
 	 */
 	public static Map<String, List<SubtitleFragment>> DemuxFile(ResourceLinks resources, File file) throws IOException{
 		Map<String, File> sonFiles = new HashMap<String, File>();
-		log.debug("Running commandline: "+resources.getProjectx()+" -ini "+resources.getProjectXconfig() + " -log -demux "+file.getAbsolutePath());
-		ProcessRunner pr = new ProcessRunner("bash","-c",resources.getProjectx()+" -ini "+resources.getProjectXconfig() + " -log -demux "+file.getAbsolutePath());
+		String commandeLine = resources.getProjectx()+" -ini "+resources.getProjectXconfig() + " -log -demux "+file.getAbsolutePath();
+		log.debug("Running commandline: {}",commandeLine);
+		ProcessRunner pr = new ProcessRunner("bash","-c",commandeLine);
 		pr.run();
 		//String StringOutput = pr.getProcessOutputAsString();
 		//String StringError = pr.getProcessErrorAsString();
@@ -99,7 +103,7 @@ public class Demux {
 							String[] temp = line.split(" ");					
 							sonFiles.put(pids.get(i) ,new File(temp[temp.length-1]));
 							i++;
-							log.debug("found .son: "+temp[temp.length-1]);
+							log.debug("found .son: {}",temp[temp.length-1]);
 							//found = true;
 						}
 					}

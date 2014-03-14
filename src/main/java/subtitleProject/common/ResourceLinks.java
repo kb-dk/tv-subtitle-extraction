@@ -1,4 +1,4 @@
-package subtitleProject;
+package subtitleProject.common;
 
 /**
  * Class to hold given links either from properties file, or arguments (arguments will thrumpf properties) 

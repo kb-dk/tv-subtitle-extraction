@@ -1,0 +1,121 @@
+package subtitleProject.hardCodedSubs;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Set;
+
+import subtitleProject.common.ResourceLinks;
+import subtitleProject.common.SubtitleFragment;
+
+public class SubtitleFragmentFactory {
+	
+	private static Set<String> dict;
+
+	public static SubtitleFragment createSubtitleFragment(int no, String content ,ResourceLinks resources) throws IOException{
+		String timeStamp = timestampFromNo(no);
+		if(!validText(content, resources)){
+			content = "";
+		}
+		SubtitleFragment sf = new SubtitleFragment(no,timeStamp,content);
+		return sf;
+	}
+	
+	/**
+	 * Using binary search to search a word
+	 * @param properties
+	 * @throws IOException if no dictionary file is found
+	 */
+	private static void populateDic(ResourceLinks resources) throws IOException{
+		if(dict==null){
+			try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(resources.getDict())),"UTF-8"))){
+				dict = new HashSet<String>();
+				String tmp = "";
+				while ((tmp = reader.readLine()) != null)
+				{
+					dict.add(tmp.trim());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * populates the dictionary and checks every word, if 50% of content exists, the subtitle is assumed to be valid
+	 * @param line to check content of
+	 * @param properties
+	 * @return true if 50% of line is in dictionary, else false
+	 * @throws IOException if no dictionary file is found
+	 */
+	private static boolean validText(String line, ResourceLinks resources) throws IOException{
+		boolean valid = false;
+		int total = 0;
+		int validCount = 0;
+
+		//populate dictionary
+		if(dict==null){
+			populateDic(resources);
+		}
+
+		String[] cc = line.trim().split(" ");
+		total = cc.length;
+		for(String s: cc){
+			s=s.trim();
+			validCount += (dict.contains(s) ? 1 : 0 );
+		}
+
+		if(total>1 && validCount>=(total/2)){
+			valid = true;
+		}
+
+		return valid;
+	}
+	
+	/**
+	 * Generates a srt timestamp based on number (second)
+	 * @param no
+	 * @return timestamp ex 00:00:00,000 --> 00:00:001,000
+	 * @throws NumberFormatException
+	 */
+	private static String timestampFromNo(int no) throws NumberFormatException {
+		float min = 0;
+		int sec = 0;
+		if(no>59){
+			min = no/60;
+
+		}
+		sec = no%60;
+		int minInt = (int)min;
+		String minString = ""+minInt;
+		if(minString.length()==1){
+			minString = "0".concat(minString);
+		}
+		String secString = ""+sec;
+		if(secString.length()==1){
+			secString = "0".concat(secString);
+		}
+
+		String secStringAfter = ""+(sec+1);
+		if(secStringAfter.length()==1){
+			secStringAfter = "0".concat(secStringAfter);
+		}
+		String minStringAfter = minString;
+		if(secStringAfter.equals("60")){
+			secStringAfter="00";
+			minStringAfter = (Integer.parseInt(minStringAfter)+1)+"";
+			if(minStringAfter.length()==1){
+				minStringAfter = "0".concat(minStringAfter);
+			}
+		}
+
+		//		SRT protocol
+		//		2
+		//		00:00:13,000 --> 00:00:18,320
+		//		- Olsen, hva' fanden laver du?
+
+		String timeStamp= "00:"+minString+":"+secString+",000 --> 00:"+minStringAfter+":"+secStringAfter+",000";
+		return timeStamp;
+	}
+}

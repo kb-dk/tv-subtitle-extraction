@@ -1,4 +1,4 @@
-package subtitleProject;
+package subtitleProject.common;
 
 /**
  * abstract class to contain info about streams. Used by TransportStreamInfo and MpegWmvStreamInfo
