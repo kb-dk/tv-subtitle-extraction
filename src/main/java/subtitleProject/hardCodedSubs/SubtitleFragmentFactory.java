@@ -80,15 +80,29 @@ public class SubtitleFragmentFactory {
 	 * @throws NumberFormatException
 	 */
 	private static String timestampFromNo(int no) throws NumberFormatException {
-		float min = 0;
+		int min = 0;
 		int sec = 0;
+		int hour = 0;
+		//If more than 3600 seconds generates hours
+		if(no>3600){
+			hour = no/3600;
+			//Remove hours in seconds in no-variable
+			no = no - (hour*3600);
+		}
+		//If more than 60 seconds generates minutes
 		if(no>59){
 			min = no/60;
-
+			//Remove minutes in seconds in no-variable
+			no = no - (min*60);
 		}
-		sec = no%60;
-		int minInt = (int)min;
-		String minString = ""+minInt;
+		sec = no;
+		//int minInt = (int)min;
+		//Converts to string. If only one char, a zero is added in front so protocol is kept
+		String hourString = ""+hour;
+		if(hourString.length()==1){
+			hourString = "0".concat(hourString);
+		}
+		String minString = ""+min;
 		if(minString.length()==1){
 			minString = "0".concat(minString);
 		}
@@ -115,7 +129,7 @@ public class SubtitleFragmentFactory {
 		//		00:00:13,000 --> 00:00:18,320
 		//		- Olsen, hva' fanden laver du?
 
-		String timeStamp= "00:"+minString+":"+secString+",000 --> 00:"+minStringAfter+":"+secStringAfter+",000";
+		String timeStamp= hourString+":"+minString+":"+secString+",000 --> "+hourString+":"+minStringAfter+":"+secStringAfter+",000";
 		return timeStamp;
 	}
 }
