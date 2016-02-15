@@ -6,9 +6,19 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import dk.statsbiblioteket.subtitleProject.common.SubtitleFragment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,62 +34,56 @@ import dk.statsbiblioteket.util.console.ProcessRunner;
  * Class to extract subtitles by ocr of frames taken every second.
  */
 public class HardCodedSubs {
-	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
-	//private static Set<String> dict;
+	private static Logger log = LoggerFactory.getLogger(HardCodedSubs.class);
+    private ResourceLinks resources;
+    private ExecutorService executorService;
+    //private static Set<String> dict;
 
-	/**
-	 * Extracts frames from Transportstream and generates srt if content
-	 * @param file ts-file to search for hardcoded subtitles
-	 * @param localtsContent info of current program
-	 * @param resources 
-	 * @param srtPath srt file to contain upcoming subtitles
-	 * @return 1 if subtitle is detected, else 0
-	 * @throws IOException if srt file doesn't exists
-	 */
-	public static int generateTsFrames(File file, TransportStreamInfo localtsContent, ResourceLinks resources, File srtPath) throws IOException{
-		extractPngFilesFromTS(file, srtPath, localtsContent, resources);
 
-		return pngToSRT(resources, srtPath);
-	}
+    public HardCodedSubs(ResourceLinks resources, ExecutorService executorService) {
+        this.resources = resources;
+        this.executorService = executorService;
+    }
 
-	/**
-	 * Extracts frames from Mpeg or Wmv and generates srt if content
-	 * @param file videofile to search for hardcoded subtitles
-	 * @param localtsContent info of current program
-	 * @param resources 
-	 * @param srtPath srt file to contain upcoming subtitles
-	 * @return 1 if subtitle is detected, else 0
-	 * @throws IOException if srt file doesn't exists
-	 */
-	public static int generateNonTsFrames(File file, MpegWmvStreamInfo localtsContent, ResourceLinks resources, File srtPath) throws IOException{
-		extractPngFromNonTS(file, srtPath, localtsContent, resources);
-
-		return pngToSRT(resources, srtPath);
-	}
-
-	/**
+    /**
 	 * Gather png files associated to the srtpath and run ocr. Result sent to srt.
-	 * @param resources
 	 * @param srtPath to get the right png files.
 	 * @return 1 if subtitles is detected, else 0
 	 * @throws IOException if no images is found
 	 * @throws FileNotFoundException if srtfile doesn't exist
 	 * @throws UnsupportedEncodingException if UTF-8 isn't supported
 	 */
-	private static int pngToSRT(ResourceLinks resources, File srtPath)
-			throws IOException, FileNotFoundException,
-			UnsupportedEncodingException {
-		File[] files = new File(resources.getOutput()).listFiles(getPngFilter(srtPath));
+	private int pngToSRT(File srtPath)
+            throws IOException, FileNotFoundException,
+            UnsupportedEncodingException {
+		File[] files = new File(resources.getTemp()).listFiles(getPngFilter(srtPath));
+
 
 		if (files == null){
 			throw new IOException("No images found");
+		} else {
+			Arrays.sort(files);
 		}
 
 		Subtitle subtitleFragments = new Subtitle();
 
-		for(int i = 0; i<files.length;i++){
-			subtitleFragments.add(OCR.ocrFrame(files[i], resources));
+        Set<Future<SubtitleFragment>> fragments = new LinkedHashSet<>();
+ 		for (final File file : files) {
+            fragments.add(executorService.submit(new Callable<SubtitleFragment>() {
+                @Override
+                public SubtitleFragment call() throws Exception {
+                    Thread.currentThread().setName("OCR-"+file.getName());
+                    return OCR.ocrFrame(file, resources);
+                }
+            }));
 		}
+        for (Future<SubtitleFragment> fragment : fragments) {
+            try {
+                subtitleFragments.add(fragment.get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new IOException(e.getCause());
+            }
+        }
 
 		int succes = 0;
 		try {
@@ -97,17 +101,16 @@ public class HardCodedSubs {
 	 * @param file ts-file to search for hardcoded subtitle
 	 * @param srtPath srt file to contain upcoming subtitles
 	 * @param localtsContent info of current program
-	 * @param resources
 	 * @throws NumberFormatException if filename convention has changed since testing, and trying to parse letters to numbers
 	 */
-	private static void extractPngFilesFromTS(File file, File srtPath, 
-			TransportStreamInfo localtsContent, ResourceLinks resources)
-					throws NumberFormatException {
+	private void extractPngFilesFromTS(File file, File srtPath,
+			TransportStreamInfo localtsContent)
+            throws NumberFormatException, IOException {
 		String[] videoInfo = localtsContent.getVideoStreamDetails().trim().split(" ");
 		String frameSize = "";
-		for(int i = 0; i<videoInfo.length;i++){
-			if(Pattern.matches("^\\d{2,}x\\d{2,}$",videoInfo[i])){
-				frameSize = videoInfo[i];
+		for (String aVideoInfo : videoInfo) {
+			if (Pattern.matches("^\\d{2,}x\\d{2,}$", aVideoInfo)) {
+				frameSize = aVideoInfo;
 			}
 		}
 		String[] frameSizeSplit = frameSize.split("x");
@@ -117,7 +120,6 @@ public class HardCodedSubs {
 		yOffset = (yOffset/100)*80;
 		yFrameSize = Integer.parseInt(frameSizeSplit[1])-yOffset;
 		frameSize = frameSizeSplit[0]+"x"+yFrameSize;
-		log.debug("Running OCR on: {} frames, yOffset: {} (total framsize: {}x{})",frameSize,yOffset,frameSizeSplit[0],frameSizeSplit[1]);
 		String recordedFrames = "3600";
 		Pattern p = Pattern.compile("\\#(.*?)\\[");
 		Matcher m = p.matcher(localtsContent.getVideoStreamDetails());
@@ -125,11 +127,17 @@ public class HardCodedSubs {
 		while (m.find()) {
 			pid = m.group(1);
 		}
-		String commandline = resources.getFfmpeg()+" -i "+file.getAbsolutePath()+" -r 1 -s "+frameSize +" -vf crop="+frameSizeSplit[0]+":"+yFrameSize+":0:"+yOffset+" -an -y -vframes "+recordedFrames+" -map "+pid + " "+resources.getOutput()+srtPath.getName()+"%d.png";
+        log.info("Extracting 1 frame per second, at most {} frames, as png in {}",recordedFrames,resources.getTemp());
+        log.debug("Extracting frames of {}, yOffset: {} (total framsize: {}x{})",frameSize,yOffset,frameSizeSplit[0],frameSizeSplit[1]);
+        String commandline = resources.getFfmpeg()+" -i "+file.getAbsolutePath()+" -r 1 -s "+frameSize +" -vf crop="+frameSizeSplit[0]+":"+yFrameSize+":0:"+yOffset+" -an -y -vframes "+recordedFrames+" -map "+pid + " "+resources.getTemp()+srtPath.getName()+"%04d.png";
 		log.debug("Running commandline: {}",commandline);
 		ProcessRunner pr = new ProcessRunner("bash","-c",commandline);
 		pr.run();
-		//String StringOutput = pr.getProcessOutputAsString();
+        if (pr.getReturnCode() != 0){
+            throw new IOException("Failed to run '"+commandline+"', got '"+pr.getProcessErrorAsString());
+        }
+
+        //String StringOutput = pr.getProcessOutputAsString();
 		//String StringError = pr.getProcessErrorAsString();
 		//log.debug(StringOutput);
 		//log.debug(StringError);
@@ -140,34 +148,37 @@ public class HardCodedSubs {
 	 * @param file ts-file to search for hardcoded subtitle
 	 * @param srtPath srt file to contain upcoming subtitles
 	 * @param localtsContent info of current program
-	 * @param resources
 	 * @throws NumberFormatException if filename convention has changed since testing, and trying to parse letters to numbers
 	 */
-	private static void extractPngFromNonTS(File file, File srtPath,
-			MpegWmvStreamInfo localtsContent, ResourceLinks resources)
-					throws NumberFormatException {
+	private void extractPngFromNonTS(File file, File srtPath,
+			MpegWmvStreamInfo localtsContent)
+            throws NumberFormatException, IOException {
 		//Calculation amount of frames to record
 		String duration = localtsContent.getDuration();
 		//Calculation framsize to record
-		String[] videoInfo = localtsContent.getVideoStreamDetails().trim().split(" ");
+		String[] videoStreamDetails = localtsContent.getVideoStreamDetails().trim().split(" ");
 		String frameSize = "";
-		for(int i = 0; i<videoInfo.length;i++){
-			if(Pattern.matches("^\\d{2,}x\\d{2,}$",videoInfo[i])){
-				frameSize = videoInfo[i];
-			}
-		}
+        for (String videoStreamDetail : videoStreamDetails) {
+            if (Pattern.matches("^\\d{2,}x\\d{2,}$", videoStreamDetail)) {
+                frameSize = videoStreamDetail;
+            }
+        }
 		String[] frameSizeSplit = frameSize.split("x");
 		int yOffset = Integer.parseInt(frameSizeSplit[frameSizeSplit.length-1]);
 		int yFrameSize = yOffset;
 		yOffset = (yOffset/100)*80;
 		yFrameSize = Integer.parseInt(frameSizeSplit[1])-yOffset;
 		frameSize = frameSizeSplit[0]+"x"+yFrameSize;
-		String commandLine = resources.getFfmpeg()+" -i "+file.getAbsolutePath()+" -r 1 -s "+frameSize +" -vf crop="+frameSizeSplit[0]+":"+yFrameSize+":0:"+yOffset+" -an -y -vframes "+duration+" "+resources.getOutput()+srtPath.getName()+"%d.png";
+		String commandLine = resources.getFfmpeg()+" -i "+file.getAbsolutePath()+" -r 1 -s "+frameSize +" -vf crop="+frameSizeSplit[0]+":"+yFrameSize+":0:"+yOffset+" -an -y -vframes "+duration+" "+resources.getTemp()+srtPath.getName()+"%d.png";
 		log.debug("Running OCR on: {} frames, yOffset: {} (total framsize: {}x{})",frameSize,yOffset,frameSizeSplit[0],frameSizeSplit[1]);
 		log.debug("Running commandline: {}", commandLine);
 		ProcessRunner pr = new ProcessRunner("bash","-c",commandLine);
 		pr.run();
-		//String StringOutput = pr.getProcessOutputAsString();
+        if (pr.getReturnCode() != 0){
+            throw new IOException("Failed to run '"+commandLine+"', got '"+pr.getProcessErrorAsString());
+        }
+
+        //String StringOutput = pr.getProcessOutputAsString();
 		//String StringError = pr.getProcessErrorAsString();
 		//log.debug(StringOutput);
 		//log.debug(StringError);
@@ -202,4 +213,55 @@ public class HardCodedSubs {
 			}
 		};
 	}
+
+    /**
+     * Try to detect subtitles in picture using ocr
+     *
+     * @param path                   to videofile
+     * @param srthardcodedSubsPath   file to write to
+     * @param localtsContent         info of current stream
+     * @return Number of srt files generated
+     * @throws IOException                  if srt file doens't exist
+     * @throws FileNotFoundException        if srt file doens't exist
+     * @throws UnsupportedEncodingException if UTF-8 isn't supported
+     */
+    public int extract(File path,
+                       File srthardcodedSubsPath,
+                       TransportStreamInfo localtsContent) throws IOException,
+            FileNotFoundException, UnsupportedEncodingException, ExecutionException, InterruptedException {
+        extractPngFilesFromTS(path, srthardcodedSubsPath, localtsContent);
+
+        int tempint = pngToSRT(srthardcodedSubsPath);
+        if (tempint == 0) {
+            log.info("{} (didn't detect enough valid text in content)", srthardcodedSubsPath.getAbsolutePath());
+            srthardcodedSubsPath.delete();
+        }
+        return tempint;
+    }
+
+    /**
+     * Try to detect subtitles in picture using ocr
+     *
+     * @param path                   to videofile
+     * @param srthardcodedSubsPath   file to write to
+     * @param localtsContent         info of current stream
+     * @return Number of srt files generated
+     * @throws IOException                  if srt file doens't exist
+     * @throws FileNotFoundException        if srt file doens't exist
+     * @throws UnsupportedEncodingException if UTF-8 isn't supported
+     */
+    public int extract(File path,
+                       File srthardcodedSubsPath,
+                       MpegWmvStreamInfo localtsContent) throws IOException,
+            FileNotFoundException, UnsupportedEncodingException {
+        extractPngFromNonTS(path, srthardcodedSubsPath, localtsContent);
+
+        int tempint = pngToSRT(srthardcodedSubsPath);
+        if (tempint == 0) {
+            log.info("{} (didn't detect enough valid text in content)", srthardcodedSubsPath.getAbsolutePath());
+            srthardcodedSubsPath.delete();
+        }
+        return tempint;
+    }
+
 }

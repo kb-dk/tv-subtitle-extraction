@@ -10,7 +10,7 @@ sudo apt-get -y install tesseract-ocr tesseract-ocr-dan
 sudo apt-get -y install imagemagick
 
 ### ProjectX
-sudo apt-get -y install projectx
+sudo apt-get -y install project-x
 
 ### ccExtractor
 sudo apt-get install unzip

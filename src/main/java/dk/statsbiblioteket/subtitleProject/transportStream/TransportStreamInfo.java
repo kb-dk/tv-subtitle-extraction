@@ -1,6 +1,7 @@
 package dk.statsbiblioteket.subtitleProject.transportStream;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,14 +66,17 @@ public class TransportStreamInfo extends StreamInfo{
 	/**
 	 * Uses ffProbe to analyze the transportStream
 	 * @param tsPath to TransportStream
-	 * @param properties
 	 * @return an list with StreamInfo instances
 	 */
-	public static List<TransportStreamInfo> analyze(String tsPath, ResourceLinks resources){
+	public static List<TransportStreamInfo> analyze(String tsPath, ResourceLinks resources) throws IOException {
 		String commandline = resources.getFfprobe()+" "+tsPath;
 		log.debug("Running commandline: {}",commandline);
 		ProcessRunner pr = new ProcessRunner("bash","-c",commandline);
 		pr.run();
+		if (pr.getReturnCode() != 0){
+			throw new IOException("Failed to run '" + commandline + "', got '" + pr.getProcessErrorAsString());
+		}
+
 		//	String StringOutput = pr.getProcessOutputAsString();
 		String StringError = pr.getProcessErrorAsString();
 		//log.debug(StringOutput);
@@ -146,7 +150,7 @@ public class TransportStreamInfo extends StreamInfo{
 				firstStreamFound = false;
 				List<String> subStreams = new ArrayList<String>();
 				while(!firstStreamFound && i<outPut.length){
-					if(outPut[i].toLowerCase().contains("subtitle")){
+					if(outPut[i].toLowerCase().contains("dvb_subtitle")){
 						subStreams.add(outPut[i]);	
 						i++;
 					}

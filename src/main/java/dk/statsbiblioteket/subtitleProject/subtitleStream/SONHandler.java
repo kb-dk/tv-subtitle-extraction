@@ -56,6 +56,9 @@ public class SONHandler {
 						//log.debug("Running commandline: {}",commandline);
 						ProcessRunner pr = new ProcessRunner("bash","-c",commandline);
 						pr.run();
+						if (pr.getReturnCode() != 0){
+							throw new IOException("Failed to run '"+commandline+"', got '"+pr.getProcessErrorAsString());
+						}
 						bmpFile.delete();
 						subtitleFragments.add(OCR.ocrFrameSon(new File(pngFileName), resources, timeStamp, no));
 					}

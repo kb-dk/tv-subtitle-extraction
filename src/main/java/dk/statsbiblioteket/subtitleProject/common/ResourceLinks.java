@@ -7,6 +7,7 @@ public class ResourceLinks {
 
 	private String input;
 	private String output;
+	private String temp;
 	private String ccextractor;
 	private String ffprobe;
 	private String ffmpeg;
@@ -19,13 +20,17 @@ public class ResourceLinks {
 	private String projectXconfig;
 	private String terminationTime;
 
-	public ResourceLinks(String input, String output, String ccextractor,
-			String ffprobe, String ffmpeg, String tesseract, String projectx,
-			String convert, String dict, String teleIndex, String tessConfig,
-			String projectXconfig, String terminationTime) {
+	public ResourceLinks() {
+	}
+
+	public ResourceLinks(String input, String output, String temp, String ccextractor,
+						 String ffprobe, String ffmpeg, String tesseract, String projectx,
+						 String convert, String dict, String teleIndex, String tessConfig,
+						 String projectXconfig, String terminationTime) {
 		super();
 		this.input = input;
 		this.output = output;
+		this.temp = temp;
 		this.ccextractor = ccextractor;
 		this.ffprobe = ffprobe;
 		this.ffmpeg = ffmpeg;
@@ -49,6 +54,12 @@ public class ResourceLinks {
 	}
 	public void setOutput(String output) {
 		this.output = output;
+	}
+	public String getTemp() {
+		return temp;
+	}
+	public void setTemp(String temp) {
+		this.temp = temp;
 	}
 	public String getDict() {
 		return dict;

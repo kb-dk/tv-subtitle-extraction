@@ -8,6 +8,8 @@ import dk.statsbiblioteket.subtitleProject.common.ResourceLinks;
 import dk.statsbiblioteket.subtitleProject.common.StreamInfo;
 import dk.statsbiblioteket.subtitleProject.transportStream.TransportStreamInfo;
 
+import java.io.IOException;
+
 /**
  * Extended StreamInfo class to handle additional mpeg or wmv info 
  */
@@ -55,12 +57,16 @@ public class MpegWmvStreamInfo extends StreamInfo{
 	 * @param resources
 	 * @return a MpegWmvStreamInfo instance with analyzed ffprope data
 	 */
-	public static MpegWmvStreamInfo analyze(String Path, ResourceLinks resources){
+	public static MpegWmvStreamInfo analyze(String Path, ResourceLinks resources) throws IOException {
 		String commandline =resources.getFfprobe()+" "+Path;
 		log.debug("Running commandline: {}",commandline);
 		ProcessRunner pr = new ProcessRunner("bash","-c",commandline);
 
 		pr.run();
+		if (pr.getReturnCode() != 0){
+			throw new IOException("Failed to run '" + commandline + "', got '" + pr.getProcessErrorAsString());
+		}
+
 		String StringOutput = pr.getProcessOutputAsString();
 		String StringError = pr.getProcessErrorAsString();
 		log.debug(StringOutput);

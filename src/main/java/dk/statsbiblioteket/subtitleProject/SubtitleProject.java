@@ -10,11 +10,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Main class of SubtitleProject. gather external paths and starts the srt generator
@@ -55,6 +57,7 @@ public class SubtitleProject {
 		String properties ="";
 		String input ="";
 		String output="";
+		String temp="";
 		String dict = "";
 		String teleIndex="";
 		String tessConfig="";
@@ -97,6 +100,10 @@ public class SubtitleProject {
 		if(output==null||output.equalsIgnoreCase("")){
 			output = prop.getProperty("outPutDirectory","output/");
 		}
+		if(temp==null||temp.equalsIgnoreCase("")){
+			temp = prop.getProperty("tempDirectory","/tmp/");
+		}
+
 
 		dict = prop.getProperty("dict",Thread.currentThread().getContextClassLoader().getResource("dictv2.txt").getPath());
 
@@ -141,7 +148,7 @@ public class SubtitleProject {
 			log.error("projectXPath is not defined");
 		}
 
-		return new ResourceLinks(input, output, ccextractor, ffprobe,
+		return new ResourceLinks(input, output, temp, ccextractor, ffprobe,
 								 ffmpeg, tesseract, projectx, convert,
 								 dict, teleIndex, tessConfig,
 								 projectXconfig, terminationTime);
@@ -154,23 +161,27 @@ public class SubtitleProject {
 	 * @throws ExecutionException if executorService isn't done
 	 */
 	@SuppressWarnings("unused")
-	private static void startSrtGenerator(ResourceLinks resources) throws InterruptedException, ExecutionException {
-		File file = new File(resources.getInput());
+	private static void startSrtGenerator(final ResourceLinks resources) throws InterruptedException, ExecutionException, TimeoutException {
+		final File file = new File(resources.getInput());
 		if (file == null){
 			log.error("No file found");
 		}
 
-		ExecutorService executorService = Executors.newFixedThreadPool(2);
+		final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
 
 		log.debug("Generates srt files");
-		Future<Integer> result = executorService.submit(new SRTGenerator(file, resources));
+		Future<Integer> result = executorService.submit(new Callable<Integer>() {
+			@Override
+			public Integer call() throws Exception {
+				SRTGenerator generator = new SRTGenerator(resources,executorService);
+				return generator.generateFile(file);
+			}
+		});
 
+
+		Integer numberOfSrtFiles = result.get(Integer.parseInt(resources.getTerminationTime()), TimeUnit.HOURS);
 		executorService.shutdown();
-		executorService.awaitTermination(Integer.parseInt(resources.getTerminationTime()), TimeUnit.HOURS);
-
-		while(!result.isDone()){
-			//do nothing?
-		}
-		log.info("Total srt files generated: {}",result.get());
+		log.info("Total srt files generated: {}",numberOfSrtFiles);
 	}
 }

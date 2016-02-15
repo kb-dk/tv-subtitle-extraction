@@ -1,4 +1,4 @@
-tessedit_char_blacklist §_áç'"#”<>;,.-/*››%\«»·—=$ç!0123456789()?:ü'[ñ““äö|
+tessedit_char_blacklist ï¿½_ï¿½ï¿½'"#ï¿½<>;,.-/*ï¿½ï¿½%\ï¿½ï¿½ï¿½ï¿½=$ï¿½0123456789():ï¿½'[ï¿½ï¿½ï¿½|
 textord_heavy_nr 1
 textord_tabfind_vertical_horizontal_mix 0
 chop_enable 0

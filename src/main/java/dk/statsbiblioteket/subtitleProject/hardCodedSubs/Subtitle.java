@@ -31,10 +31,10 @@ public class Subtitle {
 		int counter = 1;
 		StringBuilder srt = new StringBuilder();
 		//String srtContent ="";
-		for(int i =0;i<fragments.size();i++){
-			if(fragments.get(i).haveContent()){
-				srt.append(counter+"\n");
-				srt.append(fragments.get(i).toString());
+		for (SubtitleFragment fragment : fragments) {
+			if (fragment.haveContent()) {
+				srt.append(counter + "\n");
+				srt.append(fragment.toString());
 				counter++;
 			}
 		}

@@ -8,24 +8,34 @@ import java.io.InputStreamReader;
 
 import dk.statsbiblioteket.subtitleProject.hardCodedSubs.SubtitleFragmentFactory;
 import dk.statsbiblioteket.util.console.ProcessRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OCR {
-	/**
+
+    private static Logger log = LoggerFactory.getLogger(OCR.class);
+
+    /**
 	 * Image manipulation using ImageMagick, and ocr using Tesseract
 	 * @param file image to manipulate
-	 * @param properties
+	 * @param resources resources
 	 * @return subtitlefragment with ocr result
 	 * @throws IOException if no ocr result from tesseract (tesseract error)
 	 */
 	public static SubtitleFragment ocrFrame(File file, ResourceLinks resources) throws IOException{
 
+		log.debug("Running OCR on {}",file.getName());
 		ProcessRunner pr;
 		editFrame(file, resources);
 		String commandline = resources.getTesseract()+" "+file.getAbsolutePath()+" "+ file.getAbsolutePath()+" -l dan "+resources.getTessConfig();
 		//log.debug("Running commandline: {}",commandline);
 		pr = new ProcessRunner("bash","-c",commandline);
 		pr.run();
-		File ocrTxt = new File(file.getAbsolutePath()+".txt");
+        if (pr.getReturnCode() != 0){
+            throw new IOException("Failed to run '"+commandline+"', got '"+pr.getProcessErrorAsString());
+        }
+
+        File ocrTxt = new File(file.getAbsolutePath()+".txt");
 
 		String line ="";
 		String content ="";
@@ -65,7 +75,7 @@ public class OCR {
 	 * @param file Image to edit
 	 * @param resources
 	 */
-	private static void editFrame(File file, ResourceLinks resources) {
+	private static void editFrame(File file, ResourceLinks resources) throws IOException {
 		//Turn non-light pixels in picture to black
 		//Sensitivity based on video format
 		String thresholdvalue = "70%";
@@ -76,12 +86,20 @@ public class OCR {
 		//log.debug("Running commandline: {}",commandline);
 		ProcessRunner pr = new ProcessRunner("bash","-c",commandline);
 		pr.run();
-		commandline =resources.getConvert()+" "+file.getAbsolutePath()+" -contrast -contrast "+file.getAbsolutePath();
+        if (pr.getReturnCode() != 0){
+            throw new IOException("Failed to run '"+commandline+"', got '"+pr.getProcessErrorAsString());
+        }
+
+        commandline =resources.getConvert()+" "+file.getAbsolutePath()+" -contrast -contrast "+file.getAbsolutePath();
 		//Reduce Contrast to make darker
 		//log.debug("Running commandline: {}",commandline);
 		pr = new ProcessRunner("bash","-c",commandline);
 		pr.run();
-	}	
+        if (pr.getReturnCode() != 0){
+            throw new IOException("Failed to run '"+commandline+"', got '"+pr.getProcessErrorAsString());
+        }
+
+    }
 	
 	/**
 	 * Extracts the number in imagefilename
@@ -104,7 +122,7 @@ public class OCR {
 	 * @param properties 
 	 * @return SubtitleFragment with ocr result and timestamp
 	 */
-	public static SubtitleFragment ocrFrameSon(File file, ResourceLinks resources, String timeStamp, int number){
+	public static SubtitleFragment ocrFrameSon(File file, ResourceLinks resources, String timeStamp, int number) throws IOException {
 		String commandline;
 		editSon(file, resources);
 
@@ -112,7 +130,11 @@ public class OCR {
 		//log.debug("Running commandline: {}",commandline);
 		ProcessRunner pr = new ProcessRunner("bash","-c",commandline);
 		pr.run();
-		//String StringOutput = pr.getProcessOutputAsString();
+        if (pr.getReturnCode() != 0){
+            throw new IOException("Failed to run '"+commandline+"', got '"+pr.getProcessErrorAsString());
+        }
+
+        //String StringOutput = pr.getProcessOutputAsString();
 		//String StringError = pr.getProcessErrorAsString();
 		//log.debug(StringOutput);
 		//log.debug(StringError);
@@ -143,13 +165,18 @@ public class OCR {
 	 * @param file Image to edit
 	 * @param resources
 	 */
-	private static void editSon(File file, ResourceLinks resources) {
+	private static void editSon(File file, ResourceLinks resources) throws IOException {
 		String commandline = resources.getConvert()+" -black-threshold 70% "+file.getAbsolutePath();
 		//log.debug("Running commandline: {}",commandline);
-		ProcessRunner pr1 = new ProcessRunner("bash","-c",commandline);
-		pr1.run(); 
+		ProcessRunner pr = new ProcessRunner("bash","-c",commandline);
+		pr.run();
+        if (pr.getReturnCode() != 0){
+            throw new IOException("Failed to run '"+commandline+"', got '"+pr.getProcessErrorAsString());
+        }
 
-		//String StringOutput1 = pr1.getProcessOutputAsString();
+
+
+        //String StringOutput1 = pr1.getProcessOutputAsString();
 		//String StringError1 = pr1.getProcessErrorAsString();
 		//log.debug(StringOutput1);
 		//log.debug(StringError1);
