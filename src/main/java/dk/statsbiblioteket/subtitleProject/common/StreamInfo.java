@@ -1,4 +1,4 @@
-package subtitleProject.common;
+package dk.statsbiblioteket.subtitleProject.common;
 
 /**
  * abstract class to contain info about streams. Used by TransportStreamInfo and MpegWmvStreamInfo

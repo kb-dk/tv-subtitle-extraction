@@ -1,11 +1,11 @@
-package subtitleProject.hardCodedSubs;
+package dk.statsbiblioteket.subtitleProject.hardCodedSubs;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import subtitleProject.common.NoSubsException;
-import subtitleProject.common.SubtitleFragment;
+import dk.statsbiblioteket.subtitleProject.common.NoSubsException;
+import dk.statsbiblioteket.subtitleProject.common.SubtitleFragment;
 
 public class Subtitle {
 

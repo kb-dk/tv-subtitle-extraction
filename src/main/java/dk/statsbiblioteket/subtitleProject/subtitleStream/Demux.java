@@ -1,4 +1,4 @@
-package subtitleProject.subtitleStream;
+package dk.statsbiblioteket.subtitleProject.subtitleStream;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,9 +18,9 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import subtitleProject.SubtitleProject;
-import subtitleProject.common.ResourceLinks;
-import subtitleProject.common.SubtitleFragment;
+import dk.statsbiblioteket.subtitleProject.SubtitleProject;
+import dk.statsbiblioteket.subtitleProject.common.ResourceLinks;
+import dk.statsbiblioteket.subtitleProject.common.SubtitleFragment;
 import dk.statsbiblioteket.util.console.ProcessRunner;
 
 /**

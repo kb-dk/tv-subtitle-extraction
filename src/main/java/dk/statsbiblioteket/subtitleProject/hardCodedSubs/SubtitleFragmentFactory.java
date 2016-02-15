@@ -1,4 +1,4 @@
-package subtitleProject.hardCodedSubs;
+package dk.statsbiblioteket.subtitleProject.hardCodedSubs;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,8 +8,8 @@ import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
 
-import subtitleProject.common.ResourceLinks;
-import subtitleProject.common.SubtitleFragment;
+import dk.statsbiblioteket.subtitleProject.common.ResourceLinks;
+import dk.statsbiblioteket.subtitleProject.common.SubtitleFragment;
 
 public class SubtitleFragmentFactory {
 	

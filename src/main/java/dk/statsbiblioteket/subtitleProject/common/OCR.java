@@ -1,4 +1,4 @@
-package subtitleProject.common;
+package dk.statsbiblioteket.subtitleProject.common;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,7 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import subtitleProject.hardCodedSubs.SubtitleFragmentFactory;
+import dk.statsbiblioteket.subtitleProject.hardCodedSubs.SubtitleFragmentFactory;
 import dk.statsbiblioteket.util.console.ProcessRunner;
 
 public class OCR {

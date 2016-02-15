@@ -1,4 +1,4 @@
-package subtitleProject;
+package dk.statsbiblioteket.subtitleProject;
 
 public class Test {
 

@@ -1,5 +1,18 @@
-package subtitleProject;
+package dk.statsbiblioteket.subtitleProject;
 
+import dk.statsbiblioteket.subtitleProject.common.ResourceLinks;
+import dk.statsbiblioteket.subtitleProject.common.SubtitleFragment;
+import dk.statsbiblioteket.subtitleProject.hardCodedSubs.HardCodedSubs;
+import dk.statsbiblioteket.subtitleProject.nonStreamed.MpegWmvStreamInfo;
+import dk.statsbiblioteket.subtitleProject.subtitleStream.Demux;
+import dk.statsbiblioteket.subtitleProject.teletext.TeletextIndexes;
+import dk.statsbiblioteket.subtitleProject.teletext.TimePeriod;
+import dk.statsbiblioteket.subtitleProject.transportStream.TransportStreamInfo;
+import dk.statsbiblioteket.util.console.ProcessRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.lang.model.type.UnknownTypeException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,23 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import javax.lang.model.type.UnknownTypeException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import subtitleProject.common.ResourceLinks;
-import subtitleProject.common.SubtitleFragment;
-import subtitleProject.hardCodedSubs.HardCodedSubs;
-import subtitleProject.nonStreamed.MpegWmvStreamInfo;
-import subtitleProject.subtitleStream.Demux;
-import subtitleProject.teletext.TeletextIndexes;
-import subtitleProject.teletext.TimePeriod;
-import subtitleProject.transportStream.TransportStreamInfo;
-import dk.statsbiblioteket.util.console.ProcessRunner;
-
 /**
- * Generates srt-files. Deletes srt if no content is found.  
+ * Generates srt-files. Deletes srt if no content is found.
  */
 public class SRTGenerator implements Callable<Integer>  {
 	private static Logger log = LoggerFactory.getLogger(SubtitleProject.class);
@@ -58,7 +56,7 @@ public class SRTGenerator implements Callable<Integer>  {
 	 * Generate srt files for every program in transportStream
 	 * @param videoFile to extract srt files from
 	 * @return The number of srt files there has been generated based on the single path
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private  int generateFile(File videoFile) throws Exception{
 		int numberOfSrt = 0;
@@ -77,7 +75,7 @@ public class SRTGenerator implements Callable<Integer>  {
 			String srtEnd = ".srt";
 
 			for(int i = 0;i<transportStreamContent.size();i++){
-				TransportStreamInfo localtsContent = transportStreamContent.get(i); 
+				TransportStreamInfo localtsContent = transportStreamContent.get(i);
 				String[] temp = transportStreamContent.get(i).getProgramNo().split(" ");
 				String programNo = executableProgramNo + temp[temp.length-1] + " ";
 
@@ -100,8 +98,8 @@ public class SRTGenerator implements Callable<Integer>  {
 				if(!transportStreamContent.get(i).getVideoStreamDetails().contains("No Video Stream")){
 
 					content = extractSRTFromPicture(videoFile,
-							transportStreamContent, srtdvbSubPath,
-							srthardcodedSubsPath, content, localtsContent);
+													transportStreamContent, srtdvbSubPath,
+													srthardcodedSubsPath, content, localtsContent);
 				}
 				else{
 					log.info("{} have no videostream.. Moving on",localtsContent.getProgramNo());
@@ -150,7 +148,7 @@ public class SRTGenerator implements Callable<Integer>  {
 		}
 		else{
 			log.error("{} is not supported",type);
-			throw new UnknownTypeException(null, null); 
+			throw new UnknownTypeException(null, null);
 		}
 		return numberOfSrt;
 	}
@@ -206,9 +204,9 @@ public class SRTGenerator implements Callable<Integer>  {
 	 * @throws UnsupportedEncodingException if UTF-8 isn't supported
 	 */
 	private int extractSRTFromPicture(File path,
-			List<TransportStreamInfo> transportStreamContent,
-			File srtdvbSubPath, File srthardcodedSubsPath, int content,
-			TransportStreamInfo localtsContent) throws IOException,
+									  List<TransportStreamInfo> transportStreamContent,
+									  File srtdvbSubPath, File srthardcodedSubsPath, int content,
+									  TransportStreamInfo localtsContent) throws IOException,
 			FileNotFoundException, UnsupportedEncodingException {
 		int tempint = HardCodedSubs.generateTsFrames(path, localtsContent, resources, srthardcodedSubsPath);
 		if(tempint==0){
@@ -221,7 +219,7 @@ public class SRTGenerator implements Callable<Integer>  {
 
 		if(!transportStreamContent.isEmpty()){
 			content = extractSRTFromDvbSub(path, srtdvbSubPath,
-					content, localtsContent);
+										   content, localtsContent);
 		}
 		else{
 			log.info("{} has no dvb_substream",srtdvbSubPath.getAbsolutePath());
@@ -237,14 +235,14 @@ public class SRTGenerator implements Callable<Integer>  {
 	 * @param content number of current generated srt files
 	 * @param localtsContent info of current stream
 	 * @return number of generated srt files
-	 * @throws IOException if no srt-file or videofile exists 
+	 * @throws IOException if no srt-file or videofile exists
 	 * @throws FileNotFoundException if no srt file exists
 	 * @throws UnsupportedEncodingException if UTF-8 isn't supported
 	 */
 	private int extractSRTFromDvbSub(File path, File srtdvbSubPath,
-			int content, TransportStreamInfo localtsContent)
-					throws IOException, FileNotFoundException,
-					UnsupportedEncodingException {
+									 int content, TransportStreamInfo localtsContent)
+			throws IOException, FileNotFoundException,
+			UnsupportedEncodingException {
 		if(!demuxed){
 			demuxed = true;
 			log.info("Extracting subPictures from transportstream using ProjectX");
@@ -255,7 +253,7 @@ public class SRTGenerator implements Callable<Integer>  {
 		boolean match = false;
 		while(it.hasNext() && !match){
 			String pid = it.next();
-			for(String subtitleStreams: localtsContent.getSubtitleStreams()){	
+			for(String subtitleStreams: localtsContent.getSubtitleStreams()){
 				if(subtitleStreams.contains(pid)){
 					match=true;
 					log.info("{} (content detected.. running ocr)",srtdvbSubPath.getAbsolutePath());
@@ -263,9 +261,9 @@ public class SRTGenerator implements Callable<Integer>  {
 				}
 			}
 		}
-		if(!match){							
+		if(!match){
 			log.info("{} (no content...)",srtdvbSubPath.getAbsolutePath());
-			srtdvbSubPath.delete();						
+			srtdvbSubPath.delete();
 		}
 		return content;
 	}
@@ -293,7 +291,7 @@ public class SRTGenerator implements Callable<Integer>  {
 				}
 
 			}
-		} 
+		}
 
 		if(emptyLineCount==lineCount){
 			deleteNote =" (no Content...)";
@@ -309,7 +307,7 @@ public class SRTGenerator implements Callable<Integer>  {
 	}
 
 	/**
-	 * Writes subtitleFragments to srt file according to the SRT protocol 
+	 * Writes subtitleFragments to srt file according to the SRT protocol
 	 * @param srtPath to write to
 	 * @param subtitleFragments to write to srt
 	 * @return 1
@@ -393,8 +391,8 @@ public class SRTGenerator implements Callable<Integer>  {
 		return page;
 	}
 
-	public Integer call() throws Exception {	
-		return generateFile(path);		
+	public Integer call() throws Exception {
+		return generateFile(path);
 	}
 }
 

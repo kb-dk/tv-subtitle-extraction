@@ -1,4 +1,4 @@
-package subtitleProject.common;
+package dk.statsbiblioteket.subtitleProject.common;
 
 /**
  * Exception thrown by HardCodedSubs->pngToSRT 

@@ -1,11 +1,9 @@
-package subtitleProject.teletext;
+package dk.statsbiblioteket.subtitleProject.teletext;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.jfree.util.Log;
-
-import subtitleProject.teletext.TimePeriod;
 
 /**
  * Class to contain teletext pages

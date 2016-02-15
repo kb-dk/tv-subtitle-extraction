@@ -1,4 +1,4 @@
-package subtitleProject.common;
+package dk.statsbiblioteket.subtitleProject.common;
 
 /**
  * Class to hold given links either from properties file, or arguments (arguments will thrumpf properties) 

@@ -1,4 +1,4 @@
-package subtitleProject.hardCodedSubs;
+package dk.statsbiblioteket.subtitleProject.hardCodedSubs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,12 +12,12 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import subtitleProject.SubtitleProject;
-import subtitleProject.common.NoSubsException;
-import subtitleProject.common.OCR;
-import subtitleProject.common.ResourceLinks;
-import subtitleProject.nonStreamed.MpegWmvStreamInfo;
-import subtitleProject.transportStream.TransportStreamInfo;
+import dk.statsbiblioteket.subtitleProject.SubtitleProject;
+import dk.statsbiblioteket.subtitleProject.common.NoSubsException;
+import dk.statsbiblioteket.subtitleProject.common.OCR;
+import dk.statsbiblioteket.subtitleProject.common.ResourceLinks;
+import dk.statsbiblioteket.subtitleProject.nonStreamed.MpegWmvStreamInfo;
+import dk.statsbiblioteket.subtitleProject.transportStream.TransportStreamInfo;
 import dk.statsbiblioteket.util.console.ProcessRunner;
 
 /**

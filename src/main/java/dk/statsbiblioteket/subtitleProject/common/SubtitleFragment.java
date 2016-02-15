@@ -1,4 +1,4 @@
-package subtitleProject.common;
+package dk.statsbiblioteket.subtitleProject.common;
 
 /**
  * Class to contain ocr result of single frame and a timestamp

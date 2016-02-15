@@ -1,12 +1,12 @@
-package subtitleProject.nonStreamed;
+package dk.statsbiblioteket.subtitleProject.nonStreamed;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.statsbiblioteket.util.console.ProcessRunner;
-import subtitleProject.common.ResourceLinks;
-import subtitleProject.common.StreamInfo;
-import subtitleProject.transportStream.TransportStreamInfo;
+import dk.statsbiblioteket.subtitleProject.common.ResourceLinks;
+import dk.statsbiblioteket.subtitleProject.common.StreamInfo;
+import dk.statsbiblioteket.subtitleProject.transportStream.TransportStreamInfo;
 
 /**
  * Extended StreamInfo class to handle additional mpeg or wmv info 

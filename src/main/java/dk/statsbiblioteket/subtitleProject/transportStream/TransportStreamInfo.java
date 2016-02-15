@@ -1,4 +1,4 @@
-package subtitleProject.transportStream;
+package dk.statsbiblioteket.subtitleProject.transportStream;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.statsbiblioteket.util.console.ProcessRunner;
-import subtitleProject.common.ResourceLinks;
-import subtitleProject.common.StreamInfo;
+import dk.statsbiblioteket.subtitleProject.common.ResourceLinks;
+import dk.statsbiblioteket.subtitleProject.common.StreamInfo;
 
 /**
  * Extended StreamInfo class to handle additional TransportStream info 
@@ -146,7 +146,7 @@ public class TransportStreamInfo extends StreamInfo{
 				firstStreamFound = false;
 				List<String> subStreams = new ArrayList<String>();
 				while(!firstStreamFound && i<outPut.length){
-					if(outPut[i].toLowerCase().contains("dvb_subtitle")){
+					if(outPut[i].toLowerCase().contains("subtitle")){
 						subStreams.add(outPut[i]);	
 						i++;
 					}

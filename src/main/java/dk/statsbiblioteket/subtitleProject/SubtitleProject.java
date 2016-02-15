@@ -1,4 +1,8 @@
-package subtitleProject;
+package dk.statsbiblioteket.subtitleProject;
+
+import dk.statsbiblioteket.subtitleProject.common.ResourceLinks;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,11 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import subtitleProject.common.ResourceLinks;
 
 /**
  * Main class of SubtitleProject. gather external paths and starts the srt generator
@@ -96,75 +95,61 @@ public class SubtitleProject {
 		}
 
 		if(output==null||output.equalsIgnoreCase("")){
-			output = prop.getProperty("outPutDirectory");
-			if(output==null||output.equalsIgnoreCase("")){
-				output = "output/";				
-			}
+			output = prop.getProperty("outPutDirectory","output/");
 		}
 
-		dict = prop.getProperty("dict");
-		if(dict==null){
-			dict = Thread.currentThread().getContextClassLoader().getResource("dictv2.txt").getPath();
-		}
+		dict = prop.getProperty("dict",Thread.currentThread().getContextClassLoader().getResource("dictv2.txt").getPath());
 
-		teleIndex = prop.getProperty("teleTextIndexPath");
-		if(teleIndex==null||teleIndex.equalsIgnoreCase("")){
-			teleIndex=Thread.currentThread().getContextClassLoader().getResource("TeletextIndexes.xml").getPath();
-			log.info(teleIndex);
-		}
+		teleIndex = prop.getProperty("teleTextIndexPath",Thread.currentThread().getContextClassLoader().getResource("TeletextIndexes.xml").getPath());
 
-		tessConfig = prop.getProperty("tesseractConfigPath");
-		if(tessConfig==null||tessConfig.equalsIgnoreCase("")){
-			tessConfig=Thread.currentThread().getContextClassLoader().getResource("Tesseractconfigfile.txt").getPath();
-		}
+		tessConfig = prop.getProperty("tesseractConfigPath",Thread.currentThread().getContextClassLoader().getResource("Tesseractconfigfile.txt").getPath());
 
-		projectXconfig=prop.getProperty("projectXIniPath");
-		if(projectXconfig==null||projectXconfig.equalsIgnoreCase("")){
-			tessConfig=Thread.currentThread().getContextClassLoader().getResource("X.ini").getPath();
-		}
+		projectXconfig=prop.getProperty("projectXIniPath",Thread.currentThread().getContextClassLoader().getResource("X.ini").getPath());
 
-		terminationTime=prop.getProperty("HoursBeforeTermination");
+		terminationTime=prop.getProperty("HoursBeforeTermination","1000");
 		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
 			terminationTime="1000";
 		}
 
 		ccextractor=prop.getProperty("ccextractorPath");
-		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
+		if(terminationTime.isEmpty()){
 			log.error("ccextractorPath is not defined");
 		}
 
 		ffmpeg=prop.getProperty("ffmpegPath");
-		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
+		if(terminationTime.isEmpty()){
 			log.error("ffmpegPath is not defined");
 		}
 
 		ffprobe=prop.getProperty("ffprobePath");
-		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
+		if(terminationTime.isEmpty()){
 			log.error("ffprobePath is not defined");
 		}
 
 		tesseract=prop.getProperty("tesseract");
-		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
+		if(terminationTime.isEmpty()){
 			log.error("tesseract is not defined");
 		}
 
 		convert=prop.getProperty("convertPath");
-		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
+		if(terminationTime.isEmpty()){
 			log.error("convertPath is not defined");
 		}
 
 		projectx=prop.getProperty("projectXPath");
-		if(terminationTime==null||terminationTime.equalsIgnoreCase("")){
+		if(terminationTime.isEmpty()){
 			log.error("projectXPath is not defined");
 		}
 
-		ResourceLinks resources = new ResourceLinks(input.trim(), output.trim(), ccextractor.trim(), ffprobe.trim(), ffmpeg.trim(), tesseract.trim(), projectx.trim(), convert.trim(), dict.trim(), teleIndex.trim(), tessConfig.trim(), projectXconfig.trim(), terminationTime.trim());
-		return resources;
+		return new ResourceLinks(input, output, ccextractor, ffprobe,
+								 ffmpeg, tesseract, projectx, convert,
+								 dict, teleIndex, tessConfig,
+								 projectXconfig, terminationTime);
 	}
 
 	/**
 	 * Calls SRTGenerator with the individual paths
-	 * @param properties
+	 * @param resources paths and configs
 	 * @throws InterruptedException if executerservice has run to long
 	 * @throws ExecutionException if executorService isn't done
 	 */

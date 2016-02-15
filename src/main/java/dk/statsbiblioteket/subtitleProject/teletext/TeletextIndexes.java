@@ -1,4 +1,4 @@
-package subtitleProject.teletext;
+package dk.statsbiblioteket.subtitleProject.teletext;
 
 import java.io.IOException;
 import java.util.ArrayList;
