@@ -167,21 +167,19 @@ public class SubtitleProject {
 			log.error("No file found");
 		}
 
-		final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
+		final ExecutorService mainThread = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());;
 
 		log.debug("Generates srt files");
-		Future<Integer> result = executorService.submit(new Callable<Integer>() {
+		Future<Integer> result = mainThread.submit(new Callable<Integer>() {
 			@Override
 			public Integer call() throws Exception {
-				SRTGenerator generator = new SRTGenerator(resources,executorService);
+				SRTGenerator generator = new SRTGenerator(resources,mainThread);
 				return generator.generateFile(file);
 			}
 		});
-
-
 		Integer numberOfSrtFiles = result.get(Integer.parseInt(resources.getTerminationTime()), TimeUnit.HOURS);
-		executorService.shutdown();
+		mainThread.shutdownNow();
+
 		log.info("Total srt files generated: {}",numberOfSrtFiles);
 	}
 }

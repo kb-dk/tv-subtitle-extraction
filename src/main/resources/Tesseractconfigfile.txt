@@ -1,4 +1,4 @@
-tessedit_char_blacklist �_��'"“”#�<>;!,.-/*��%\����=$�0123456789():�'[���|ñçüâ
+tessedit_char_blacklist �_��'"“”#�<>;!,.-/*��%\����=$�0123456789():�'[���|ñçüâ§
 textord_heavy_nr 1
 textord_tabfind_vertical_horizontal_mix 0
 chop_enable 0

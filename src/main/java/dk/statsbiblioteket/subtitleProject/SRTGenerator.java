@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -44,7 +43,7 @@ public class SRTGenerator {
         this.resources = resources;
         dvbSub = new DvbSub(resources);
         teletext = new TeleTextExtractor(resources);
-        hardCodedSubs = new HardCodedSubs(resources,executorService);
+        hardCodedSubs = new HardCodedSubs(resources);
     }
 
     /**
@@ -89,10 +88,14 @@ public class SRTGenerator {
                 final Future<Integer> teleTextCount = executorService.submit(new Callable<Integer>() {
                     @Override
                     public Integer call() throws Exception {
-                        Thread.currentThread().setName("Teletext");
-                        return teletext.extract(videoFile, srtTeleTextPath,
-                                                transportStreamInfo,
-                                                programNo);
+                        String name = setThreadName("Teletext");
+                        try {
+                            return teletext.extract(videoFile, srtTeleTextPath,
+                                                    transportStreamInfo,
+                                                    programNo);
+                        } finally {
+                            setThreadName(name);
+                        }
                     }
                 });
                 numberOfSrt.add(teleTextCount);
@@ -104,14 +107,18 @@ public class SRTGenerator {
                 Future<Integer> hardCodedCount = executorService.submit(new Callable<Integer>() {
                     @Override
                     public Integer call() throws Exception {
-                        Thread.currentThread().setName("Hardcoded_Subs");
+                        String name = setThreadName("Hardcoded_Subs");
+                        try {
 
-                        if (!transportStreamInfo.getVideoStreamDetails().contains("No Video Stream")) {
-                            return hardCodedSubs.extract(videoFile,
-                                                         srthardcodedSubsPath, transportStreamInfo);
-                        } else {
-                            srthardcodedSubsPath.delete();
-                            return 0;
+                            if (!transportStreamInfo.getVideoStreamDetails().contains("No Video Stream")) {
+                                return hardCodedSubs.extract(videoFile,
+                                                             srthardcodedSubsPath, transportStreamInfo);
+                            } else {
+                                srthardcodedSubsPath.delete();
+                                return 0;
+                            }
+                        } finally {
+                            setThreadName(name);
                         }
                     }
                 });
@@ -124,20 +131,24 @@ public class SRTGenerator {
                 Future<Integer> dvbSubCount = executorService.submit(new Callable<Integer>() {
                     @Override
                     public Integer call() throws Exception {
-                        Thread.currentThread().setName("DVB_Subs");
-                        if (!transportStreamInfo.getVideoStreamDetails().contains("No Video Stream")) {
-                            int dvbSubCount = 0;
-                            if (!transportStreamContent.isEmpty()) {
-                                dvbSubCount = dvbSub.extract(videoFile, srtdvbSubPath,
-                                                             transportStreamInfo);
+                        String name = setThreadName("DVB_Subs");
+                        try {
+                            if (!transportStreamInfo.getVideoStreamDetails().contains("No Video Stream")) {
+                                int dvbSubCount = 0;
+                                if (!transportStreamContent.isEmpty()) {
+                                    dvbSubCount = dvbSub.extract(videoFile, srtdvbSubPath,
+                                                                 transportStreamInfo);
+                                } else {
+                                    log.info("{} has no dvb_substream", srtdvbSubPath.getAbsolutePath());
+                                    srtdvbSubPath.delete();
+                                }
+                                return dvbSubCount;
                             } else {
-                                log.info("{} has no dvb_substream", srtdvbSubPath.getAbsolutePath());
                                 srtdvbSubPath.delete();
+                                return 0;
                             }
-                            return dvbSubCount;
-                        } else {
-                            srtdvbSubPath.delete();
-                            return 0;
+                        } finally {
+                            setThreadName(name);
                         }
 
                     }
@@ -149,8 +160,12 @@ public class SRTGenerator {
             numberOfSrt.add(executorService.submit(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
-                    Thread.currentThread().setName("NonTransportStream");
-                    return generateSRTFromNonTs(videoFile);
+                    String name = setThreadName("NonTransportStream");
+                    try {
+                        return generateSRTFromNonTs(videoFile);
+                    } finally {
+                        setThreadName(name);
+                    }
                 }
             }));
         }
@@ -160,6 +175,12 @@ public class SRTGenerator {
         };
         return sum;
 
+    }
+
+    private String setThreadName(String newname) {
+        String name = Thread.currentThread().getName();
+        Thread.currentThread().setName(newname);
+        return name;
     }
 
     /**

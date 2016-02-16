@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,10 +41,11 @@ public class HardCodedSubs {
     //private static Set<String> dict;
 
 
-    public HardCodedSubs(ResourceLinks resources, ExecutorService executorService) {
+    public HardCodedSubs(ResourceLinks resources) {
         this.resources = resources;
-        this.executorService = executorService;
-    }
+		executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+	}
 
     /**
 	 * Gather png files associated to the srtpath and run ocr. Result sent to srt.
@@ -56,14 +58,7 @@ public class HardCodedSubs {
 	private int pngToSRT(File srtPath)
             throws IOException, FileNotFoundException,
             UnsupportedEncodingException {
-		File[] files = new File(resources.getTemp()).listFiles(getPngFilter(srtPath));
-
-
-		if (files == null){
-			throw new IOException("No images found");
-		} else {
-			Arrays.sort(files);
-		}
+		File[] files = listPngFiles(srtPath);
 
 		Subtitle subtitleFragments = new Subtitle();
 
@@ -72,7 +67,7 @@ public class HardCodedSubs {
             fragments.add(executorService.submit(new Callable<SubtitleFragment>() {
                 @Override
                 public SubtitleFragment call() throws Exception {
-                    Thread.currentThread().setName("OCR-"+file.getName());
+                    //Thread.currentThread().setName("OCR-"+file.getName());
                     return OCR.ocrFrame(file, resources);
                 }
             }));
@@ -96,16 +91,32 @@ public class HardCodedSubs {
 		return succes;
 	}
 
+	private File[] listPngFiles(File srtPath) throws IOException {
+		File[] files = new File(resources.getTemp()).listFiles(getPngFilter(srtPath));
+
+
+		if (files == null){
+			throw new IOException("No images found");
+		} else {
+			Arrays.sort(files);
+		}
+		return files;
+	}
+
 	/**
 	 * Based on streamInfo instance, the recording framesize is calculated (buttom 20%), and then recorded. 3600 frames will be recorded, one for each second in a hour.
-	 * @param file ts-file to search for hardcoded subtitle
+	 * @param tsFile ts-file to search for hardcoded subtitle
 	 * @param srtPath srt file to contain upcoming subtitles
 	 * @param localtsContent info of current program
 	 * @throws NumberFormatException if filename convention has changed since testing, and trying to parse letters to numbers
 	 */
-	private void extractPngFilesFromTS(File file, File srtPath,
+	private void extractPngFilesFromTS(File tsFile, File srtPath,
 			TransportStreamInfo localtsContent)
             throws NumberFormatException, IOException {
+		File[] beforeFiles = listPngFiles(srtPath);
+		for (File file : beforeFiles) {
+			file.delete();
+		}
 		String[] videoInfo = localtsContent.getVideoStreamDetails().trim().split(" ");
 		String frameSize = "";
 		for (String aVideoInfo : videoInfo) {
@@ -129,15 +140,23 @@ public class HardCodedSubs {
 		}
         log.info("Extracting 1 frame per second, at most {} frames, as png in {}",recordedFrames,resources.getTemp());
         log.debug("Extracting frames of {}, yOffset: {} (total framsize: {}x{})",frameSize,yOffset,frameSizeSplit[0],frameSizeSplit[1]);
-        String commandline = resources.getFfmpeg()+" -i "+file.getAbsolutePath()+" -r 1 -s "+frameSize +" -vf crop="+frameSizeSplit[0]+":"+yFrameSize+":0:"+yOffset+" -an -y -vframes "+recordedFrames+" -map "+pid + " "+resources.getTemp()+srtPath.getName()+"%04d.png";
+        String commandline = resources.getFfmpeg()+" -i "+tsFile.getAbsolutePath()+
+							 " -vsync cfr "+
+							 " -s "+frameSize +
+							 " -vf fps=1,crop="+frameSizeSplit[0]+":"+yFrameSize+":0:"+yOffset+
+							 " -an -y  -map "+pid + " "+
+							 resources.getTemp()+srtPath.getName()+"%04d.png";
 		log.debug("Running commandline: {}",commandline);
 		ProcessRunner pr = new ProcessRunner("bash","-c",commandline);
 		pr.run();
         if (pr.getReturnCode() != 0){
             throw new IOException("Failed to run '"+commandline+"', got '"+pr.getProcessErrorAsString());
         }
+		File[] pngFiles = listPngFiles(srtPath);
+		log.debug("Generated {} frames from a x second video",pngFiles.length);
 
-        //String StringOutput = pr.getProcessOutputAsString();
+
+		//String StringOutput = pr.getProcessOutputAsString();
 		//String StringError = pr.getProcessErrorAsString();
 		//log.debug(StringOutput);
 		//log.debug(StringError);

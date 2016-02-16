@@ -33,20 +33,16 @@ public class SubtitleFragment implements Comparable<SubtitleFragment>{
 	}
 
 	public String toString(){
-		String outPut = timestamp + "\n" +content;
+		String outPut = timestamp + "\n" +clean(content)+"\n\n";
 		return outPut;
 	}
 
+	private String clean(String content) {
+		return content.trim().replaceAll("(^|\n) *. *($|\n)","").replaceAll("\n{2,}","\n").trim();
+	}
+
 	public boolean haveContent(){
-		boolean content = false;
-		String[] temp = this.content.split("\n");
-		for(int i = 0; i<temp.length&&!content;i++){
-			temp[i].trim();
-			if(!temp[i].equals("")){
-				content = true;
-			}
-		}
-		return content;
+		return !clean(content).replaceAll("\\s*","").isEmpty();
 	}
 
 	public int compareTo(SubtitleFragment o) {

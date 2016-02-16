@@ -26,13 +26,13 @@ public class SubtitleFragmentFactory {
 	
 	/**
 	 * Using binary search to search a word
-	 * @param properties
+	 * @param resources resources
 	 * @throws IOException if no dictionary file is found
 	 */
 	private static void populateDic(ResourceLinks resources) throws IOException{
 		if(dict==null){
 			try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(resources.getDict())),"UTF-8"))){
-				dict = new HashSet<String>();
+				dict = new HashSet<>();
 				String tmp = "";
 				while ((tmp = reader.readLine()) != null)
 				{
@@ -45,7 +45,7 @@ public class SubtitleFragmentFactory {
 	/**
 	 * populates the dictionary and checks every word, if 50% of content exists, the subtitle is assumed to be valid
 	 * @param line to check content of
-	 * @param properties
+	 * @param resources resources
 	 * @return true if 50% of line is in dictionary, else false
 	 * @throws IOException if no dictionary file is found
 	 */
@@ -75,11 +75,12 @@ public class SubtitleFragmentFactory {
 	
 	/**
 	 * Generates a srt timestamp based on number (second)
-	 * @param no
+	 * @param no Frame number, starting from 1, when played with 1 frame per second
 	 * @return timestamp ex 00:00:00,000 --> 00:00:001,000
 	 * @throws NumberFormatException
 	 */
 	private static String timestampFromNo(int no) throws NumberFormatException {
+		no = no -1;
 		int min = 0;
 		int sec = 0;
 		int hour = 0;
